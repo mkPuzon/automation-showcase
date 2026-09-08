@@ -1,0 +1,6 @@
+node_modules
+.svelte-kit
+.git
+.gitignore
+backend/__pycache__
+**/__pycache__
