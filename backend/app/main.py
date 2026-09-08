@@ -8,12 +8,20 @@ import markdown
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import JSON, DateTime, Integer, String, Text, create_engine, select
+from sqlalchemy import JSON, DateTime, Integer, String, Text, create_engine, inspect, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://automation:automation@localhost:5432/automation")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "change-me")
 ADMIN_COOKIE = "automation_admin"
+
+
+def configured_admin_password() -> str:
+    """Read the configured password from the process environment.
+
+    Reading this at request time keeps the API tied to ADMIN_PASSWORD rather
+    than a value captured when this module happened to be imported.
+    """
+    return os.getenv("ADMIN_PASSWORD", "change-me")
 EMAIL_PATTERN = re.compile(r"^[A-Za-z]+@colby\.edu$")
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
@@ -37,6 +45,8 @@ class Project(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
     submitted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_by: Mapped[str | None] = mapped_column(String(160))
+    rejection_reason: Mapped[str | None] = mapped_column(Text)
 
 
 class ProjectInput(BaseModel):
@@ -71,6 +81,9 @@ class ProjectOut(ProjectInput):
     submitted_at: datetime
     detail_slug: str
     description_html: str
+    reviewed_at: datetime | None
+    reviewed_by: str | None
+    rejection_reason: str | None
 
 
 class AdminProjectUpdate(BaseModel):
@@ -81,6 +94,7 @@ class AdminProjectUpdate(BaseModel):
     department: str | None = Field(default=None, min_length=1, max_length=160)
     submitter_email: str | None = None
     status: str | None = None
+    rejection_reason: str | None = None
 
     @field_validator("submitter_email")
     @classmethod
@@ -120,6 +134,9 @@ def serialize(project: Project) -> ProjectOut:
         submitted_at=project.submitted_at,
         detail_slug=slug_for(project),
         description_html=render_markdown(project.description_markdown),
+        reviewed_at=project.reviewed_at,
+        reviewed_by=project.reviewed_by,
+        rejection_reason=project.rejection_reason,
     )
 
 
@@ -151,6 +168,14 @@ def root() -> dict[str, str]:
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(engine)
+    # Keep schema evolution explicit but lightweight for this MVP. A future
+    # production deployment can replace this with Alembic migrations.
+    existing_columns = {column["name"] for column in inspect(engine).get_columns("projects")}
+    with engine.begin() as connection:
+        if "reviewed_by" not in existing_columns:
+            connection.execute(text("ALTER TABLE projects ADD COLUMN reviewed_by VARCHAR(160)"))
+        if "rejection_reason" not in existing_columns:
+            connection.execute(text("ALTER TABLE projects ADD COLUMN rejection_reason TEXT"))
     if os.getenv("SEED_LOCAL", "false").lower() == "true":
         with SessionLocal() as db:
             if db.scalar(select(Project.id).limit(1)) is None:
@@ -187,7 +212,7 @@ def health(db: Session = Depends(get_db)) -> dict[str, str]:
 
 @app.post("/api/admin/login")
 def admin_login(password: str, response: Response) -> dict[str, str]:
-    if password != ADMIN_PASSWORD:
+    if password != configured_admin_password():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
     response.set_cookie(ADMIN_COOKIE, "authenticated", httponly=True, samesite="lax", max_age=86400)
     return {"status": "authenticated"}
@@ -234,8 +259,13 @@ def create_project(payload: ProjectInput, db: Session = Depends(get_db)) -> Proj
 
 
 @app.get("/api/admin/projects", response_model=list[ProjectOut], dependencies=[Depends(require_admin)])
-def list_admin_projects(db: Session = Depends(get_db)) -> list[ProjectOut]:
-    projects = db.scalars(select(Project).order_by(Project.status, Project.submitted_at.desc())).all()
+def list_admin_projects(status: str | None = None, db: Session = Depends(get_db)) -> list[ProjectOut]:
+    query = select(Project).order_by(Project.status, Project.submitted_at.desc())
+    if status:
+        if status not in {"pending", "approved", "rejected"}:
+            raise HTTPException(status_code=400, detail="Invalid status filter")
+        query = query.where(Project.status == status)
+    projects = db.scalars(query).all()
     return [serialize(project) for project in projects]
 
 
@@ -248,6 +278,9 @@ def edit_project(project_id: int, payload: AdminProjectUpdate, db: Session = Dep
     if "status" in values:
         project.status = values.pop("status")
         project.reviewed_at = datetime.now(timezone.utc)
+        project.reviewed_by = "admin"
+        if project.status != "rejected" and "rejection_reason" not in values:
+            project.rejection_reason = None
     for key, value in values.items():
         setattr(project, key, value)
     db.commit()

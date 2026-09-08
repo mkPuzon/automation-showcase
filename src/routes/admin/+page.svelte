@@ -47,7 +47,8 @@
 					tools: project.tools,
 					department: project.department,
 					submitter_email: project.submitter_email,
-					status: project.status
+					status: project.status,
+					rejection_reason: project.rejection_reason
 				})
 			});
 			projects = projects.map((item) => item.id === updated.id ? updated : item);
@@ -100,6 +101,8 @@
 			<select id={`status-${project.id}`} bind:value={project.status}>
 				<option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
 			</select>
+			<label for={`reason-${project.id}`}>Rejection reason (optional)</label>
+			<input id={`reason-${project.id}`} bind:value={project.rejection_reason} placeholder="Optional note for the record" />
 			<div class="actions"><button onclick={() => save(project)}>Save changes</button></div>
 		</section>
 	{/each}

@@ -11,6 +11,9 @@ export type Project = {
 	submitter_email: string;
 	status: string;
 	submitted_at: string;
+	reviewed_at: string | null;
+	reviewed_by: string | null;
+	rejection_reason: string | null;
 	detail_slug: string;
 };
 

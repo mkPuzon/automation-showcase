@@ -27,9 +27,12 @@ Implemented:
 
 Not implemented yet:
 
-- Automated backend regression test suite
 - Production authentication beyond the temporary shared admin password
 - Image uploads; Markdown images currently represent a future remote-image workflow
+
+The backend API regression suite is in `backend/tests/` and runs with `pytest`. The
+migration decision and future Alembic handoff are documented in
+[`backend/MIGRATIONS.md`](./backend/MIGRATIONS.md).
 
 See [`TODO.md`](./TODO.md) for the product plan, remaining work, and open decisions.
 
@@ -80,7 +83,11 @@ The local override has safe development defaults. To customize them, copy the ex
 cp .env.example .env
 ```
 
-At minimum, change `ADMIN_PASSWORD` if the API will be accessible beyond your own machine. The `.env` file is intentionally not committed.
+At minimum, change `ADMIN_PASSWORD` if the API will be accessible beyond your own machine. The `.env` file is intentionally not committed. Compose passes this value directly to the API container; after changing it, recreate the API container so it receives the new environment:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build --force-recreate api
+```
 
 Important variables:
 
@@ -188,7 +195,7 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
 
 ## Frontend development
 
-The SvelteKit project is present, but the MVP pages have not been implemented yet. The Compose setup exposes the frontend at `http://localhost:5173` and the backend API at `http://localhost:8000`. Existing npm commands include:
+The SvelteKit project is present and the MVP pages are implemented. The Compose setup exposes the frontend at `http://localhost:5173` and the backend API at `http://localhost:8000`. Existing npm commands include:
 
 ```sh
 npm install
@@ -197,4 +204,8 @@ npm run check
 npm run build
 ```
 
-Frontend work will add the Explore, Submit, Admin, and project detail routes after the API/database workflow has its automated regression coverage.
+Backend API tests can be run from the repository root with a Python environment that has `backend/requirements.txt` installed:
+
+```sh
+PYTHONPATH=backend pytest -q backend/tests
+```
