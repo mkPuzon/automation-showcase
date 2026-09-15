@@ -7,6 +7,13 @@
 	let loading = $state(true);
 	let error = $state('');
 
+	function toolClass(tool: string) {
+		const name = tool.toLowerCase();
+		if (/sheet|excel|tableau|power bi|sql|python|data|analytics|database/.test(name)) return 'tag--data';
+		if (/zapier|make|power automate|automation|workflow|form|slack|notion/.test(name)) return 'tag--workflow';
+		return '';
+	}
+
 	onMount(async () => {
 		try {
 			project = await api<Project>(`/api/projects/${page.params.slug}`);
@@ -25,11 +32,11 @@
 {:else if error}
 	<p class="error">{error}</p>
 {:else if project}
-	<p><a href="/">← Back to explore</a></p>
+	<a class="back-link" href="/">← Back to explore</a>
+	<p class="meta">{project.department}</p>
 	<h1>{project.title}</h1>
-	<p class="meta">{project.department} · Submitted by {project.submitter_email} · {project.contributors.join(', ')}</p>
+	<p class="meta">Submitted by {project.submitter_email} · {project.contributors.join(', ')}</p>
 	<h2>Tools used</h2>
-	<ul class="tags">{#each project.tools as tool}<li class="tag">{tool}</li>{/each}</ul>
-	<h2>Description</h2>
+	<ul class="tags">{#each project.tools as tool}<li class={`tag ${toolClass(tool)}`}>{tool}</li>{/each}</ul>
 	<div class="markdown rendered">{@html project.description_html}</div>
 {/if}

@@ -1,5 +1,11 @@
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
+export type Options = {
+	contributors: string[];
+	tools: string[];
+	departments: string[];
+};
+
 export type Project = {
 	id: number;
 	title: string;
@@ -27,5 +33,6 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 		const body = await response.json().catch(() => ({}));
 		throw new Error(body.detail ?? `Request failed (${response.status})`);
 	}
+	if (response.status === 204) return undefined as T;
 	return response.json();
 }

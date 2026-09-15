@@ -59,6 +59,18 @@ def test_public_endpoints_exclude_pending_and_rejected_projects(client: TestClie
     assert client.get(f"/api/projects/{rejected['detail_slug']}").status_code == 404
 
 
+def test_admin_queue_puts_pending_projects_first(client: TestClient) -> None:
+    approved = client.post("/api/projects", json=project_payload(title="Approved project")).json()
+    client.post("/api/projects", json=project_payload(title="Pending project"))
+    admin_login(client)
+    client.patch(f"/api/admin/projects/{approved['id']}", json={"status": "approved"})
+
+    response = client.get("/api/admin/projects")
+
+    assert response.status_code == 200
+    assert response.json()[0]["status"] == "pending"
+
+
 def test_admin_list_requires_authorization(client: TestClient) -> None:
     response = client.get("/api/admin/projects")
 
@@ -110,6 +122,28 @@ def test_missing_project_ids_return_not_found(client: TestClient) -> None:
 
     assert response.status_code == 404
     assert client.get("/api/projects/not-a-real-project").status_code == 404
+
+
+def test_admin_can_delete_project(client: TestClient) -> None:
+    created = client.post("/api/projects", json=project_payload()).json()
+    admin_login(client)
+
+    response = client.delete(f"/api/admin/projects/{created['id']}")
+
+    assert response.status_code == 204
+    assert response.content == b""
+    assert client.get("/api/admin/projects").json() == []
+    assert client.delete(f"/api/admin/projects/{created['id']}").status_code == 404
+
+
+def test_project_deletion_requires_admin(client: TestClient) -> None:
+    created = client.post("/api/projects", json=project_payload()).json()
+
+    response = client.delete(f"/api/admin/projects/{created['id']}")
+
+    assert response.status_code == 401
+    admin_login(client)
+    assert client.get("/api/admin/projects").json()[0]["id"] == created["id"]
 
 
 def test_repeated_moderation_actions_are_safe_and_idempotent(client: TestClient) -> None:

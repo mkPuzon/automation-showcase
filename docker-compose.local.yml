@@ -5,7 +5,7 @@ services:
     environment:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-local-admin}
       SEED_LOCAL: ${SEED_LOCAL:-true}
-      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173,http://localhost:4173}
 
   frontend:
     ports:

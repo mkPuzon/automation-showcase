@@ -8,7 +8,7 @@ import markdown
 from fastapi import Cookie, Depends, FastAPI, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import JSON, DateTime, Integer, String, Text, create_engine, inspect, select, text
+from sqlalchemy import JSON, DateTime, Integer, String, Text, case, create_engine, inspect, select, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://automation:automation@localhost:5432/automation")
@@ -148,7 +148,7 @@ def require_admin(automation_admin: str | None = Cookie(default=None)) -> None:
 app = FastAPI(title="Automation Showcase API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("FRONTEND_ORIGIN", "http://localhost:5173").split(","),
+    allow_origins=os.getenv("FRONTEND_ORIGIN", "http://localhost:5173,http://localhost:4173").split(","),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -200,6 +200,11 @@ Meeting hosts can manage transcript availability during meetings, and participan
 4) (Optional) In the window, select the Delete transcript checkbox.
 5) Click Stop transcription.""", contributors=["Alex Morgan"], tools=["Zoom"], department="Academic Affairs", submitter_email="alex@colby.edu", status="approved", submitted_at=now),
                     Project(title="Weekly enrollment summary", description_markdown="Create a weekly summary from a spreadsheet using a repeatable workflow.", contributors=["Jamie Lee"], tools=["Google Sheets", "Zapier"], department="Institutional Research", submitter_email="jamie@colby.edu", status="pending", submitted_at=now),
+                    Project(title="Automated event reminder workflow", description_markdown="Send timely reminders to registrants before campus events and keep the event team informed when responses change.", contributors=["Priya Shah", "Morgan Ellis"], tools=["Microsoft Forms", "Power Automate", "Outlook"], department="Campus Events", submitter_email="priya@colby.edu", status="approved", submitted_at=now),
+                    Project(title="Library reading list cleanup", description_markdown="Normalize faculty reading lists, identify duplicate entries, and prepare a clean spreadsheet for library staff to review.", contributors=["Riley Chen"], tools=["Google Sheets", "OpenRefine", "Python"], department="Libraries", submitter_email="riley@colby.edu", status="approved", submitted_at=now),
+                    Project(title="Student advising notes assistant", description_markdown="Turn structured advising notes into a consistent follow-up checklist so students and advisors leave each meeting with clear next steps.", contributors=["Taylor Brooks"], tools=["Notion", "ChatGPT", "Google Docs"], department="Student Affairs", submitter_email="taylor@colby.edu", status="approved", submitted_at=now),
+                    Project(title="Facilities work order triage", description_markdown="Route incoming facilities requests to the right team, flag urgent issues, and give requesters an automatic status update.", contributors=["Casey Williams", "Jordan Kim"], tools=["Jira", "Slack", "Make"], department="Facilities", submitter_email="casey@colby.edu", status="approved", submitted_at=now),
+                    Project(title="Research data quality checks", description_markdown="Run repeatable checks on research data files before analysis and produce a short report of missing or inconsistent values.", contributors=["Sam Rivera"], tools=["Python", "R", "GitHub Actions"], department="Research", submitter_email="sam@colby.edu", status="approved", submitted_at=now),
                 ])
                 db.commit()
 
@@ -260,7 +265,13 @@ def create_project(payload: ProjectInput, db: Session = Depends(get_db)) -> Proj
 
 @app.get("/api/admin/projects", response_model=list[ProjectOut], dependencies=[Depends(require_admin)])
 def list_admin_projects(status: str | None = None, db: Session = Depends(get_db)) -> list[ProjectOut]:
-    query = select(Project).order_by(Project.status, Project.submitted_at.desc())
+    status_order = case(
+        (Project.status == "pending", 0),
+        (Project.status == "approved", 1),
+        (Project.status == "rejected", 2),
+        else_=3,
+    )
+    query = select(Project).order_by(status_order, Project.submitted_at.desc())
     if status:
         if status not in {"pending", "approved", "rejected"}:
             raise HTTPException(status_code=400, detail="Invalid status filter")
@@ -286,6 +297,16 @@ def edit_project(project_id: int, payload: AdminProjectUpdate, db: Session = Dep
     db.commit()
     db.refresh(project)
     return serialize(project)
+
+
+@app.delete("/api/admin/projects/{project_id}", status_code=204, dependencies=[Depends(require_admin)])
+def delete_project(project_id: int, db: Session = Depends(get_db)) -> Response:
+    project = db.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    db.delete(project)
+    db.commit()
+    return Response(status_code=204)
 
 
 def render_markdown(source: str) -> str:

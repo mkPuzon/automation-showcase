@@ -8,6 +8,7 @@
 	let loading = $state(true);
 	let error = $state('');
 	let notice = $state('');
+	let deletingId = $state<number | null>(null);
 
 	async function loadProjects() {
 		try {
@@ -58,6 +59,22 @@
 		}
 	}
 
+	async function deleteProject(project: Project) {
+		if (!confirm(`Delete “${project.title}”? This cannot be undone.`)) return;
+		error = '';
+		notice = '';
+		deletingId = project.id;
+		try {
+			await api<void>(`/api/admin/projects/${project.id}`, { method: 'DELETE' });
+			projects = projects.filter((item) => item.id !== project.id);
+			notice = `Deleted “${project.title}”.`;
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Could not delete project.';
+		} finally {
+			deletingId = null;
+		}
+	}
+
 	async function logout() {
 		await api('/api/admin/logout', { method: 'POST' });
 		loggedIn = false;
@@ -67,24 +84,34 @@
 
 <svelte:head><title>Admin · Colby Automation Showcase</title></svelte:head>
 
-<h1>Admin</h1>
+<div class="page-header">
+	<p class="meta">PRIVATE WORKSPACE</p>
+	<h1>Review projects.</h1>
+	<p class="muted">Approve, edit, or reject submissions before they become part of the public showcase.</p>
+</div>
 
 {#if !loggedIn}
-	<p class="muted">This page is intentionally not linked from the public project content. Enter the admin password to continue.</p>
+	<div class="card">
+		<p class="muted">This page is intentionally not linked from the public project content. Enter the admin password to continue.</p>
 	{#if error}<p class="error">{error}</p>{/if}
-	<form onsubmit={(event) => { event.preventDefault(); login(); }}>
-		<label for="password">Admin password</label>
-		<input id="password" type="password" bind:value={password} required />
-		<button>Sign in</button>
-	</form>
+		<form onsubmit={(event) => { event.preventDefault(); login(); }}>
+			<label for="password">Admin password</label>
+			<input id="password" type="password" bind:value={password} required />
+			<div class="actions"><button>Sign in</button></div>
+		</form>
+	</div>
 {:else}
 	<div class="actions"><button class="secondary" onclick={logout}>Sign out</button></div>
 	{#if notice}<p class="success">{notice}</p>{/if}
 	{#if error}<p class="error">{error}</p>{/if}
 	{#if loading}<p>Loading…</p>{:else if projects.length === 0}<p class="card">No projects submitted.</p>{/if}
 	{#each projects as project}
-		<section class="card">
-			<p class="status">{project.status}</p>
+		<section class="card admin-card">
+			<p class="status" data-status={project.status}>{project.status}</p>
+			<details>
+				<summary>Rendered Markdown preview</summary>
+				<div class="rendered">{@html project.description_html}</div>
+			</details>
 			<label for={`title-${project.id}`}>Title</label>
 			<input id={`title-${project.id}`} bind:value={project.title} />
 			<label for={`description-${project.id}`}>Description (Markdown)</label>
@@ -103,7 +130,10 @@
 			</select>
 			<label for={`reason-${project.id}`}>Rejection reason (optional)</label>
 			<input id={`reason-${project.id}`} bind:value={project.rejection_reason} placeholder="Optional note for the record" />
-			<div class="actions"><button onclick={() => save(project)}>Save changes</button></div>
+			<div class="actions">
+				<button onclick={() => save(project)}>Save changes</button>
+				<button class="secondary" disabled={deletingId === project.id} onclick={() => deleteProject(project)}>{deletingId === project.id ? 'Deleting…' : 'Delete project'}</button>
+			</div>
 		</section>
 	{/each}
 {/if}
