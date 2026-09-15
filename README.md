@@ -20,9 +20,9 @@ Implemented:
 - Public API that exposes approved projects only
 - Individual project detail slugs based on project title, submission date, and a collision-safe ID
 - Admin password login using an HttpOnly cookie
-- Admin project editing and status changes
+- Admin project editing, status changes, and deletion
 - Sanitized Markdown rendering, including links and images
-- Two local seed projects
+- Seven local seed projects (six approved and one pending)
 - Separate production-style and local Docker Compose files
 
 Not implemented yet:
@@ -52,7 +52,7 @@ See [`TODO.md`](./TODO.md) for the product plan, remaining work, and open decisi
 
 ### Start the API and database
 
-The local Compose override maps the API to `localhost:8000`, enables the two seed projects, and uses `local-admin` as the default admin password.
+The local Compose override maps the API to `localhost:8000`, enables seven seed projects, and uses `local-admin` as the default admin password.
 
 
 The API is available at:
@@ -93,10 +93,10 @@ Important variables:
 
 - `ADMIN_PASSWORD` — temporary shared admin password
 - `DATABASE_URL` — API connection string; the Compose default points to the `db` service
-- `SEED_LOCAL` — set to `true` to insert the two sample projects on an empty database
+- `SEED_LOCAL` — set to `true` to insert the seven sample projects on an empty database
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — PostgreSQL container settings
 
-Seed data is inserted only when the database has no projects. To reset the local database and seed it again, remove the Compose volume:
+Seed data is inserted only when the database has no projects. To reset the local database and seed all seven projects, remove the Compose volume:
 
 ```sh
 docker compose -f docker-compose.yml -f docker-compose.local.yml down -v
@@ -166,6 +166,13 @@ curl -b /tmp/automation-admin-cookie \
   -d '{"status":"approved"}'
 ```
 
+Delete a project permanently:
+
+```sh
+curl -b /tmp/automation-admin-cookie \
+  -X DELETE http://localhost:8000/api/admin/projects/2
+```
+
 Admin edits can update project fields as well as status. For example:
 
 ```sh
@@ -185,7 +192,7 @@ curl -b /tmp/automation-admin-cookie \
 ## Compose files
 
 - `docker-compose.yml` contains the API and PostgreSQL services without host port mappings. This keeps the base file suitable for deployment environments that provide their own routing.
-- `docker-compose.local.yml` is a local-only override. It maps port `8000`, enables seed data, and supplies the local default admin password.
+- `docker-compose.local.yml` is a local-only override. It maps ports `8000` (API) and `5173` (frontend), enables seed data, and supplies the local default admin password.
 
 Always use both files for local development:
 
@@ -204,8 +211,10 @@ npm run check
 npm run build
 ```
 
-Backend API tests can be run from the repository root with a Python environment that has `backend/requirements.txt` installed:
+With the API and database running through Compose, run the browser workflow tests with:
 
 ```sh
-PYTHONPATH=backend pytest -q backend/tests
+npx playwright test
 ```
+
+These cover the Explore, Submit, and Admin approval flows. The test runner starts a temporary frontend preview on port `4173`, so the API allows both the normal local frontend origin (`5173`) and the test origin (`4173`).
