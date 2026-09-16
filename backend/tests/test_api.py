@@ -1,5 +1,8 @@
+from types import SimpleNamespace
+
 from fastapi.testclient import TestClient
 
+from app import main
 from .conftest import admin_login, project_payload
 
 
@@ -28,6 +31,159 @@ def test_valid_submission_is_pending_and_preserves_markdown(client: TestClient) 
     assert body["description_markdown"] == source
     assert "<script>" not in body["description_html"]
     assert "<strong>bold</strong>" in body["description_html"]
+
+
+def test_markdown_preview_renders_safely(client: TestClient) -> None:
+    response = client.post(
+        "/api/markdown/preview",
+        json={"source": "- First\n- Second\n\n<script>alert('xss')</script>"},
+    )
+
+    assert response.status_code == 200
+    assert "<li>First</li>" in response.json()["html"]
+    assert "<li>Second</li>" in response.json()["html"]
+    assert "<script>" not in response.json()["html"]
+
+
+def test_pdf_upload_converts_basic_layout_to_editable_markdown(client: TestClient, monkeypatch) -> None:
+    class FakePage:
+        def extract_text(self, extraction_mode: str = "") -> str:
+            assert extraction_mode == "layout"
+            return "AUTOMATION GUIDE\n\n• First step\n• Second step"
+
+    monkeypatch.setattr(
+        main,
+        "PdfReader",
+        lambda _: SimpleNamespace(is_encrypted=False, pages=[FakePage()]),
+    )
+
+    response = client.post(
+        "/api/markdown/from-pdf",
+        files={"file": ("guide.pdf", b"%PDF-1.7 test", "application/pdf")},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["description_markdown"] == "# Automation Guide\n\n- First step\n- Second step"
+
+
+def test_pdf_parser_rejoins_wrapped_prose_without_overheading() -> None:
+    source = main.pdf_text_to_markdown(
+        "AUTOMATION GUIDE\n\nThis is a normal paragraph that was wrapped at the\npage boundary and should remain one readable paragraph.\n\nNEXT STEPS\n\n1. Review the workflow.\n2. Share the result."
+    )
+
+    assert source == (
+        "# Automation Guide\n\n"
+        "This is a normal paragraph that was wrapped at the page boundary and should remain one readable paragraph.\n\n"
+        "## Next Steps\n\n"
+        "1. Review the workflow.\n2. Share the result."
+    )
+
+
+def test_pdf_parser_keeps_numbered_items_in_one_ordered_list() -> None:
+    source = main.pdf_text_to_markdown("1. First step\n\n2. Second step\n\n3. Final step")
+
+    assert source == "1. First step\n2. Second step\n3. Final step"
+
+
+def test_image_upload_requires_valid_draft_token(client: TestClient) -> None:
+    response = client.post(
+        "/api/uploads",
+        params={"draft_token": "too-short"},
+        files={"file": ("diagram.png", b"not-an-image", "image/png")},
+    )
+
+    assert response.status_code == 400
+    assert "draft token" in response.json()["detail"]
+
+
+def test_image_upload_stores_safe_png_and_attaches_on_submission(client: TestClient, tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(main, "UPLOADS_DIR", tmp_path)
+    token = "draft_" + "a" * 26
+    png = b"\x89PNG\r\n\x1a\nvalid image bytes"
+
+    uploaded = client.post(
+        "/api/uploads",
+        params={"draft_token": token},
+        files={"file": ("workflow.png", png, "image/png")},
+    )
+    assert uploaded.status_code == 201
+    body = uploaded.json()
+    assert body["markdown"].startswith("![workflow.png](http://localhost:8000/api/uploads/")
+    assert list(tmp_path.iterdir())[0].suffix == ".png"
+
+    created = client.post(
+        "/api/projects",
+        json=project_payload(description_markdown=f"## Story\n\n{body['markdown']}", draft_token=token),
+    ).json()
+    assert body["markdown"] in created["description_markdown"]
+
+    admin_login(client)
+    client.patch(f"/api/admin/projects/{created['id']}", json={"status": "approved"})
+    image_response = client.get(body["url"])
+    assert image_response.status_code == 200
+
+
+def test_image_upload_rejects_bad_extension_and_unauthorized_admin_upload(client: TestClient) -> None:
+    token = "draft_" + "b" * 26
+    response = client.post(
+        "/api/uploads",
+        params={"draft_token": token},
+        files={"file": ("workflow.gif", b"GIF89a", "image/gif")},
+    )
+    assert response.status_code == 400
+
+    created = client.post("/api/projects", json=project_payload()).json()
+    response = client.post(
+        f"/api/admin/projects/{created['id']}/images",
+        files={"file": ("workflow.jpg", b"bad", "image/jpeg")},
+    )
+    assert response.status_code == 401
+
+
+def test_deleted_project_removes_attached_images(client: TestClient, tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(main, "UPLOADS_DIR", tmp_path)
+    admin_login(client)
+    created = client.post("/api/projects", json=project_payload()).json()
+    uploaded = client.post(
+        f"/api/admin/projects/{created['id']}/images",
+        files={"file": ("workflow.jpg", b"\xff\xd8\xffimage\xff\xd9", "image/jpeg")},
+    )
+    assert uploaded.status_code == 201
+    filename = next(tmp_path.iterdir())
+    assert filename.exists()
+
+    assert client.delete(f"/api/admin/projects/{created['id']}").status_code == 204
+    assert not filename.exists()
+
+
+def test_pdf_upload_rejects_non_pdf_files(client: TestClient) -> None:
+    response = client.post(
+        "/api/markdown/from-pdf",
+        files={"file": ("guide.txt", b"plain text", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Upload a PDF file."
+
+
+def test_pdf_upload_rejects_image_only_documents(client: TestClient, monkeypatch) -> None:
+    class EmptyPage:
+        def extract_text(self, extraction_mode: str = "") -> str:
+            return ""
+
+    monkeypatch.setattr(
+        main,
+        "PdfReader",
+        lambda _: SimpleNamespace(is_encrypted=False, pages=[EmptyPage()]),
+    )
+
+    response = client.post(
+        "/api/markdown/from-pdf",
+        files={"file": ("scanned.pdf", b"%PDF-1.7 test", "application/pdf")},
+    )
+
+    assert response.status_code == 422
+    assert "selectable text" in response.json()["detail"]
 
 
 def test_missing_and_invalid_submission_fields_are_rejected(client: TestClient) -> None:

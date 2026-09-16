@@ -8,6 +8,7 @@
 	let error = $state('');
 	let searchQuery = $state('');
 	let toolFilter = $state('');
+	let showSubmissionNotice = $state(false);
 
 	let toolOptions = $derived(
 		[...new Set(projects.flatMap((project) => project.tools))].sort((a, b) => a.localeCompare(b))
@@ -34,6 +35,14 @@
 		toolFilter = '';
 	}
 
+	function closeSubmissionNotice() {
+		showSubmissionNotice = false;
+	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape' && showSubmissionNotice) closeSubmissionNotice();
+	}
+
 	function toolClass(tool: string) {
 		const name = tool.toLowerCase();
 		if (/sheet|excel|tableau|power bi|sql|python|data|analytics|database/.test(name))
@@ -44,6 +53,11 @@
 	}
 
 	onMount(async () => {
+		if (sessionStorage.getItem('automation-showcase-submission-notice') === 'true') {
+			sessionStorage.removeItem('automation-showcase-submission-notice');
+			showSubmissionNotice = true;
+		}
+
 		try {
 			projects = await api<Project[]>('/api/projects');
 		} catch (err) {
@@ -54,12 +68,43 @@
 	});
 </script>
 
+<svelte:window onkeydown={handleKeydown} />
+
 <svelte:head><title>Explore · Colby Automation Showcase</title></svelte:head>
+
+{#if showSubmissionNotice}
+	<div
+		class="notice-backdrop"
+		role="presentation"
+		onclick={(event) => event.target === event.currentTarget && closeSubmissionNotice()}
+	>
+		<div
+			class="notice-dialog"
+			role="dialog"
+			tabindex="-1"
+			aria-modal="true"
+			aria-labelledby="submission-notice-title"
+		>
+			<p class="meta">SUBMISSION RECEIVED</p>
+			<h2 id="submission-notice-title">Your project is being reviewed.</h2>
+			<p>
+				Thanks for sharing your work with the Colby community. We’ll review your project before it
+				appears in the showcase.
+			</p>
+			<p>
+				If you haven’t recently spoken with us about it, reach out to <a
+					href="mailto:davisai@colby.edu">davisai@colby.edu</a
+				> for updates on its status.
+			</p>
+			<button type="button" onclick={closeSubmissionNotice}>Got it</button>
+		</div>
+	</div>
+{/if}
 
 <div class="explore-header">
 	<div>
 		<p class="meta">COLBY STAFF & FACULTY</p>
-		<h1>Automation Exploration Respository</h1>
+		<h1>Explore projects</h1>
 		<p class="muted">Practical automation projects shared by the people who built them.</p>
 	</div>
 	<a class="button" href={resolve('/submit')}>Share a project</a>

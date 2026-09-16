@@ -9,6 +9,7 @@
 	let error = $state('');
 	let notice = $state('');
 	let deletingId = $state<number | null>(null);
+	let uploadingId = $state<number | null>(null);
 
 	async function loadProjects() {
 		try {
@@ -52,10 +53,43 @@
 					rejection_reason: project.rejection_reason
 				})
 			});
-			projects = projects.map((item) => item.id === updated.id ? updated : item);
+			projects = projects.map((item) => (item.id === updated.id ? updated : item));
 			notice = `Saved “${updated.title}”.`;
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Could not save project.';
+		}
+	}
+
+	async function uploadImage(project: Project, event: Event) {
+		const input = event.currentTarget as HTMLInputElement;
+		const file = input.files?.[0];
+		if (!file) return;
+		if (!/\.(png|jpg)$/i.test(file.name) || !['image/png', 'image/jpeg'].includes(file.type)) {
+			error = 'Images must be PNG or JPG files.';
+			input.value = '';
+			return;
+		}
+		if (file.size > 5 * 1024 * 1024) {
+			error = 'Images must be 5 MB or smaller.';
+			input.value = '';
+			return;
+		}
+		uploadingId = project.id;
+		error = '';
+		try {
+			const formData = new FormData();
+			formData.append('file', file);
+			const result = await api<{ markdown: string }>(`/api/admin/projects/${project.id}/images`, {
+				method: 'POST',
+				body: formData
+			});
+			project.description_markdown += `${project.description_markdown.trim() ? '\\n\\n' : ''}${result.markdown}`;
+			notice = 'Image added. Save changes to update the project description.';
+		} catch (err) {
+			error = err instanceof Error ? err.message : 'Could not upload image.';
+		} finally {
+			uploadingId = null;
+			input.value = '';
 		}
 	}
 
@@ -87,14 +121,24 @@
 <div class="page-header">
 	<p class="meta">PRIVATE WORKSPACE</p>
 	<h1>Review projects.</h1>
-	<p class="muted">Approve, edit, or reject submissions before they become part of the public showcase.</p>
+	<p class="muted">
+		Approve, edit, or reject submissions before they become part of the public showcase.
+	</p>
 </div>
 
 {#if !loggedIn}
 	<div class="card">
-		<p class="muted">This page is intentionally not linked from the public project content. Enter the admin password to continue.</p>
-	{#if error}<p class="error">{error}</p>{/if}
-		<form onsubmit={(event) => { event.preventDefault(); login(); }}>
+		<p class="muted">
+			This page is intentionally not linked from the public project content. Enter the admin
+			password to continue.
+		</p>
+		{#if error}<p class="error">{error}</p>{/if}
+		<form
+			onsubmit={(event) => {
+				event.preventDefault();
+				login();
+			}}
+		>
 			<label for="password">Admin password</label>
 			<input id="password" type="password" bind:value={password} required />
 			<div class="actions"><button>Sign in</button></div>
@@ -104,7 +148,9 @@
 	<div class="actions"><button class="secondary" onclick={logout}>Sign out</button></div>
 	{#if notice}<p class="success">{notice}</p>{/if}
 	{#if error}<p class="error">{error}</p>{/if}
-	{#if loading}<p>Loading…</p>{:else if projects.length === 0}<p class="card">No projects submitted.</p>{/if}
+	{#if loading}<p>Loading…</p>{:else if projects.length === 0}<p class="card">
+			No projects submitted.
+		</p>{/if}
 	{#each projects as project}
 		<section class="card admin-card">
 			<p class="status" data-status={project.status}>{project.status}</p>
@@ -115,24 +161,63 @@
 			<label for={`title-${project.id}`}>Title</label>
 			<input id={`title-${project.id}`} bind:value={project.title} />
 			<label for={`description-${project.id}`}>Description (Markdown)</label>
-			<textarea id={`description-${project.id}`} bind:value={project.description_markdown}></textarea>
+			<textarea id={`description-${project.id}`} bind:value={project.description_markdown}
+			></textarea>
+			<label for={`image-${project.id}`}>Add image</label>
+			<input
+				id={`image-${project.id}`}
+				type="file"
+				accept=".png,.jpg,image/png,image/jpeg"
+				onchange={(event) => uploadImage(project, event)}
+				disabled={uploadingId === project.id}
+			/>
+			<span class="helper"
+				>PNG or JPG, up to 5 MB. The image is appended to the Markdown source.</span
+			>
 			<label for={`contributors-${project.id}`}>Contributors (comma separated)</label>
-			<input id={`contributors-${project.id}`} value={project.contributors.join(', ')} oninput={(event) => project.contributors = (event.currentTarget as HTMLInputElement).value.split(',').map((value) => value.trim()).filter(Boolean)} />
+			<input
+				id={`contributors-${project.id}`}
+				value={project.contributors.join(', ')}
+				oninput={(event) =>
+					(project.contributors = (event.currentTarget as HTMLInputElement).value
+						.split(',')
+						.map((value) => value.trim())
+						.filter(Boolean))}
+			/>
 			<label for={`tools-${project.id}`}>Tools (comma separated)</label>
-			<input id={`tools-${project.id}`} value={project.tools.join(', ')} oninput={(event) => project.tools = (event.currentTarget as HTMLInputElement).value.split(',').map((value) => value.trim()).filter(Boolean)} />
+			<input
+				id={`tools-${project.id}`}
+				value={project.tools.join(', ')}
+				oninput={(event) =>
+					(project.tools = (event.currentTarget as HTMLInputElement).value
+						.split(',')
+						.map((value) => value.trim())
+						.filter(Boolean))}
+			/>
 			<label for={`department-${project.id}`}>Department</label>
 			<input id={`department-${project.id}`} bind:value={project.department} />
 			<label for={`email-${project.id}`}>Submitter email</label>
 			<input id={`email-${project.id}`} bind:value={project.submitter_email} />
 			<label for={`status-${project.id}`}>Status</label>
 			<select id={`status-${project.id}`} bind:value={project.status}>
-				<option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+				<option value="pending">Pending</option><option value="approved">Approved</option><option
+					value="rejected">Rejected</option
+				>
 			</select>
 			<label for={`reason-${project.id}`}>Rejection reason (optional)</label>
-			<input id={`reason-${project.id}`} bind:value={project.rejection_reason} placeholder="Optional note for the record" />
+			<input
+				id={`reason-${project.id}`}
+				bind:value={project.rejection_reason}
+				placeholder="Optional note for the record"
+			/>
 			<div class="actions">
 				<button onclick={() => save(project)}>Save changes</button>
-				<button class="secondary" disabled={deletingId === project.id} onclick={() => deleteProject(project)}>{deletingId === project.id ? 'Deleting…' : 'Delete project'}</button>
+				<button
+					class="secondary"
+					disabled={deletingId === project.id}
+					onclick={() => deleteProject(project)}
+					>{deletingId === project.id ? 'Deleting…' : 'Delete project'}</button
+				>
 			</div>
 		</section>
 	{/each}

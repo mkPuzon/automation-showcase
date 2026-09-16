@@ -28,7 +28,13 @@ Implemented:
 Not implemented yet:
 
 - Production authentication beyond the temporary shared admin password
-- Image uploads; Markdown images currently represent a future remote-image workflow
+
+Image uploads are now supported for submissions and admin edits. PNG and JPG files up to
+5 MB each can be inserted into a Markdown description, with a maximum of 10 images per
+project. The API stores them in the persistent `uploads_data` volume (or the local
+`./uploads` bind mount) and exposes them only after the project is approved. Unsubmitted
+draft images older than 24 hours are removed when the API starts; deleted project images
+are removed immediately. PDFs are still parsed only as temporary drafts and are never stored.
 
 The backend API regression suite is in `backend/tests/` and runs with `pytest`. The
 migration decision and future Alembic handoff are documented in
@@ -94,6 +100,8 @@ Important variables:
 - `ADMIN_PASSWORD` — temporary shared admin password
 - `DATABASE_URL` — API connection string; the Compose default points to the `db` service
 - `SEED_LOCAL` — set to `true` to insert the seven sample projects on an empty database
+- `PUBLIC_API_URL` — public API origin used in stored Markdown image URLs (for example `https://showcase.example.edu`)
+- `UPLOADS_DIR` — backend image storage path; Compose sets this to `/app/uploads`
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — PostgreSQL container settings
 
 Seed data is inserted only when the database has no projects. To reset the local database and seed all seven projects, remove the Compose volume:
@@ -113,6 +121,8 @@ GET  /api/projects
 GET  /api/projects/{detail_slug}
 GET  /api/options
 POST /api/projects
+POST /api/uploads?draft_token={token}
+GET  /api/uploads/{safe_filename}
 ```
 
 A submission must include:
@@ -173,6 +183,8 @@ curl -b /tmp/automation-admin-cookie \
   -X DELETE http://localhost:8000/api/admin/projects/2
 ```
 
+Submission image uploads use a client-generated draft token and return a Markdown image reference. The frontend inserts that reference into the editable description before the project is submitted. Admins can add an image directly through the admin editor with `POST /api/admin/projects/{id}/images`.
+
 Admin edits can update project fields as well as status. For example:
 
 ```sh
@@ -192,7 +204,8 @@ curl -b /tmp/automation-admin-cookie \
 ## Compose files
 
 - `docker-compose.yml` contains the API and PostgreSQL services without host port mappings. This keeps the base file suitable for deployment environments that provide their own routing.
-- `docker-compose.local.yml` is a local-only override. It maps ports `8000` (API) and `5173` (frontend), enables seed data, and supplies the local default admin password.
+- `docker-compose.local.yml` is a local-only override. It maps ports `8000` (API) and `5173` (frontend), enables seed data, supplies the local default admin password, and binds `./uploads` for easy local inspection.
+- The base Compose file includes the persistent `uploads_data` volume for deployed images. It intentionally contains no host port mappings or Traefik configuration; Dokploy handles routing.
 
 Always use both files for local development:
 

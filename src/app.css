@@ -91,6 +91,14 @@ p { line-height: 1.65; }
 .error { color: var(--navy); border-color: var(--orange); }
 .success { color: var(--navy); border-color: var(--green); }
 
+/* Submission confirmation */
+.notice-backdrop { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 1.5rem; background: rgba(0, 33, 105, .62); }
+.notice-dialog { width: min(100%, 34rem); max-width: 34rem; padding: 2rem; background: var(--white); box-shadow: 0 1.5rem 4rem rgba(0, 33, 105, .25); }
+.notice-dialog h2 { margin-top: .5rem; }
+.notice-dialog p:not(.meta) { color: var(--ink-soft); }
+.notice-dialog a { font-weight: 600; }
+.notice-dialog button { margin-top: .8rem; }
+
 /* Explore */
 .explore-header { position: relative; min-height: 31rem; padding: 6rem 0 4.5rem; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(18rem, .85fr); align-items: center; gap: 5rem; }
 .explore-header::after { content: ''; position: absolute; z-index: -1; width: 23rem; height: 23rem; right: 2rem; top: 3.5rem; border-radius: 50%; background: var(--blue); opacity: .82; animation: drift 8s ease-in-out infinite alternate; }
@@ -135,6 +143,19 @@ button.secondary:hover, .button.secondary:hover { background: var(--navy); color
 form { max-width: 760px; }
 .form-intro { margin-bottom: 2rem; }
 .field { margin: 1.6rem 0; }
+.description-guidance { padding: 1rem 1.15rem; border-left: 4px solid var(--blue); background: var(--paper-deep); }
+.description-guidance p { margin: .25rem 0; }
+.description-guidance .meta { margin-bottom: .45rem; }
+.pdf-import { margin: 1.25rem 0; padding: 1rem 1.15rem; border: 1px dashed var(--line); background: var(--white); }
+.pdf-import label { margin-bottom: .45rem; }
+.pdf-import input { background: transparent; padding: .65rem 0; border: 0; }
+.pdf-status { margin: .8rem 0 0; padding: .7rem .8rem; font-size: .86rem; }
+.markdown-live-preview { margin-top: 1.5rem; }
+.preview-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .55rem; }
+.preview-heading .helper { margin-top: 0; }
+.preview-empty { margin: 0; padding: 1.35rem 1.5rem; border: 1px dashed var(--line); color: var(--ink-soft); background: var(--white); }
+.template-actions { margin: .75rem 0 .55rem; }
+.template-actions button { font-size: .82rem; padding: .62rem .85rem; }
 label { display: block; font-weight: 600; margin-bottom: .5rem; }
 .helper { display: block; color: var(--ink-soft); font-size: .84rem; margin-top: .4rem; }
 input, textarea, select { width: 100%; border: 1px solid #829098; border-radius: 0; padding: .85rem .9rem; background: var(--white); color: var(--navy); }
@@ -147,7 +168,9 @@ pre.markdown, .rendered { font: inherit; line-height: 1.6; background: var(--whi
 .rendered > :last-child { margin-bottom: 0; }
 .rendered p { margin: .7rem 0; }
 .rendered ul, .rendered ol { margin: .7rem 0; padding-left: 1.6rem; }
-.rendered li { padding-left: .2rem; line-height: 1.6; }
+.rendered ul { list-style-type: disc; }
+.rendered ol { list-style-type: decimal; }
+.rendered li { display: list-item; padding-left: .2rem; line-height: 1.6; }
 .rendered li + li { margin-top: .45rem; }
 .rendered img { max-width: 100%; height: auto; }
 .rendered h1, .rendered h2, .rendered h3, .rendered h4 { line-height: 1.25; margin: 1.1rem 0 .45rem; }
