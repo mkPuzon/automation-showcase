@@ -1,4 +1,8 @@
-export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+// Keep production same-origin so Dokploy can route /api to the API service.
+// Local Compose supplies http://localhost:8000 at build time; the dev fallback
+// keeps `npm run dev` working without a .env file.
+const configuredApiUrl = import.meta.env.VITE_API_URL;
+export const API_URL = configuredApiUrl || (import.meta.env.DEV ? 'http://localhost:8000' : '');
 
 export type Options = {
 	contributors: string[];

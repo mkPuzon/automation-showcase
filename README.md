@@ -101,6 +101,7 @@ Important variables:
 - `DATABASE_URL` — API connection string; the Compose default points to the `db` service
 - `SEED_LOCAL` — set to `true` to insert the seven sample projects on an empty database
 - `PUBLIC_API_URL` — public API origin used in stored Markdown image URLs (for example `https://showcase.example.edu`)
+- `VITE_API_URL` — frontend API origin compiled into the frontend image. Local Compose uses `http://localhost:8000`; leave it empty in production when Dokploy routes `/api` to the API service on the same domain, or set it to the public API origin when using a separate API domain.
 - `UPLOADS_DIR` — backend image storage path; Compose sets this to `/app/uploads`
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` — PostgreSQL container settings
 
