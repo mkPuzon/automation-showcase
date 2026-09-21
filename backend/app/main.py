@@ -205,32 +205,16 @@ def startup() -> None:
         with SessionLocal() as db:
             if db.scalar(select(Project.id).limit(1)) is None:
                 now = datetime.now(timezone.utc)
-                db.add_all([
-                    Project(title="Zoom meeting transcriptions", description_markdown="""# Zoom Meeting Transcriptions
-Transcripts are intended for retaining and saving speech-to-text data in the meeting.
-
-Meeting hosts can manage transcript availability during meetings, and participants may be able to request transcript access during a meeting.
-
-## Requirements for enabling or disabling meeting transcripts
-
-1) Meeting transcript must be enabled
-2) Zoom desktop app for Windows, macOS, or Linux: Global minimum version or higher
-3) Zoom mobile app for Android or iOS: Global minimum version or higher
-
-## How to start or stop meeting transcript as a host
-
-1) Start a Zoom meeting.
-2) In the meeting controls toolbar, click More then Transcript. The meeting transcript will start.
-3) (Optional) To stop the meeting transcription, in the top-right corner of the meeting window, hover over the Transcript icon, then click Stop transcription. A confirmation window will appear.
-4) (Optional) In the window, select the Delete transcript checkbox.
-5) Click Stop transcription.""", contributors=["Alex Morgan"], tools=["Zoom"], department="Academic Affairs", submitter_email="alex@colby.edu", status="approved", submitted_at=now),
-                    Project(title="Weekly enrollment summary", description_markdown="Create a weekly summary from a spreadsheet using a repeatable workflow.", contributors=["Jamie Lee"], tools=["Google Sheets", "Zapier"], department="Institutional Research", submitter_email="jamie@colby.edu", status="pending", submitted_at=now),
-                    Project(title="Automated event reminder workflow", description_markdown="Send timely reminders to registrants before campus events and keep the event team informed when responses change.", contributors=["Priya Shah", "Morgan Ellis"], tools=["Microsoft Forms", "Power Automate", "Outlook"], department="Campus Events", submitter_email="priya@colby.edu", status="approved", submitted_at=now),
-                    Project(title="Library reading list cleanup", description_markdown="Normalize faculty reading lists, identify duplicate entries, and prepare a clean spreadsheet for library staff to review.", contributors=["Riley Chen"], tools=["Google Sheets", "OpenRefine", "Python"], department="Libraries", submitter_email="riley@colby.edu", status="approved", submitted_at=now),
-                    Project(title="Student advising notes assistant", description_markdown="Turn structured advising notes into a consistent follow-up checklist so students and advisors leave each meeting with clear next steps.", contributors=["Taylor Brooks"], tools=["Notion", "ChatGPT", "Google Docs"], department="Student Affairs", submitter_email="taylor@colby.edu", status="approved", submitted_at=now),
-                    Project(title="Facilities work order triage", description_markdown="Route incoming facilities requests to the right team, flag urgent issues, and give requesters an automatic status update.", contributors=["Casey Williams", "Jordan Kim"], tools=["Jira", "Slack", "Make"], department="Facilities", submitter_email="casey@colby.edu", status="approved", submitted_at=now),
-                    Project(title="Research data quality checks", description_markdown="Run repeatable checks on research data files before analysis and produce a short report of missing or inconsistent values.", contributors=["Sam Rivera"], tools=["Python", "R", "GitHub Actions"], department="Research", submitter_email="sam@colby.edu", status="approved", submitted_at=now),
-                ])
+                db.add(Project(
+                    title="Test Automation Project",
+                    description_markdown="# Test Automation Project\n\nThis is a generic seeded project for testing the showcase.",
+                    contributors=["Test User"],
+                    tools=["Test Tool"],
+                    department="Test Department",
+                    submitter_email="test@colby.edu",
+                    status="approved",
+                    submitted_at=now,
+                ))
                 db.commit()
 
 
