@@ -104,8 +104,8 @@
 <div class="explore-header">
 	<div>
 		<p class="meta">COLBY STAFF & FACULTY</p>
-		<h1>Explore projects</h1>
-		<p class="muted">Practical automation projects shared by the people who built them.</p>
+		<h1>Automation Showcase</h1>
+		<p class="muted">Wondering about how your collegues are using automation technology in their offices and classrooms? Explore below to see what the Colby community has created to give them back more time to focus on what matters.</p>
 	</div>
 	<a class="button" href={resolve('/submit')}>Share a project</a>
 </div>

@@ -178,10 +178,10 @@ Describe the automation itself and provide a tutorial or set of steps someone el
 
 <div class="page-header">
 	<p class="meta">OPEN INVITATION</p>
-	<h1>Show us what you built.</h1>
+	<h1>Share what helped you</h1>
 	<p class="muted form-intro">
 		Share a practical automation project with Colby colleagues. An administrator will review it
-		before it appears in Explore.
+		before it appears in the Explore page.
 	</p>
 </div>
 
