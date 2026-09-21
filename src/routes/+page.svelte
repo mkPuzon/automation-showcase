@@ -105,7 +105,11 @@
 	<div>
 		<p class="meta">COLBY STAFF & FACULTY</p>
 		<h1>Automation Showcase</h1>
-		<p class="muted">Wondering about how your collegues are using automation technology in their offices and classrooms? Explore below to see what the Colby community has created to give them back more time to focus on what matters.</p>
+		<p class="muted">
+			Wondering how your colleagues are using automation technology in their offices and classrooms?
+			Explore below to see what the Colby community has created to give them back more time to focus
+			on what matters.
+		</p>
 	</div>
 	<a class="button" href={resolve('/submit')}>Share a project</a>
 </div>
