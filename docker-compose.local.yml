@@ -11,6 +11,8 @@ services:
       - ./uploads:/app/uploads
 
   frontend:
+    environment:
+      ORIGIN: http://localhost:5173
     build:
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}

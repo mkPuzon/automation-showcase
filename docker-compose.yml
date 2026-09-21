@@ -21,7 +21,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me}
       SEED_LOCAL: ${SEED_LOCAL:-false}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173,http://localhost:4173}
-      # Empty keeps generated image URLs same-origin when Dokploy routes /api here.
+      # Empty keeps generated image URLs same-origin through the frontend proxy.
       # Set this to the public API origin when using a separate API domain.
       PUBLIC_API_URL: ${PUBLIC_API_URL:-}
       UPLOADS_DIR: /app/uploads
@@ -35,11 +35,17 @@ services:
     build:
       context: .
       args:
-        # Leave empty when Dokploy routes /api to the API service on the same domain.
+        # Leave empty to use the frontend's same-origin /api proxy.
         # Set VITE_API_URL to a public API origin when using a separate API domain.
         VITE_API_URL: ${VITE_API_URL:-}
     environment:
-      ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
+      INTERNAL_API_URL: http://api:8000
+      # Dokploy supplies the public Host and X-Forwarded-Proto headers.
+      # Pass through only when set; adapter-node rejects an empty ORIGIN.
+      ORIGIN:
+      PROTOCOL_HEADER: x-forwarded-proto
+      # Allow a 10 MB PDF plus multipart overhead; API validates individual files.
+      BODY_SIZE_LIMIT: 12M
     depends_on:
       - api
 

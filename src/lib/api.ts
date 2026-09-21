@@ -1,4 +1,4 @@
-// Keep production same-origin so Dokploy can route /api to the API service.
+// Keep production same-origin; the SvelteKit /api route proxies to the API service.
 // Local Compose supplies http://localhost:8000 at build time; the dev fallback
 // keeps `npm run dev` working without a .env file.
 const configuredApiUrl = import.meta.env.VITE_API_URL;
