@@ -1,0 +1,26 @@
+# Local dev: Postgres only. The web app (`npm run dev`) and the API (`uv run uvicorn`) run on the host.
+# Production shape lives in compose.yml.
+#
+#   docker compose -f compose.local.yml up -d db      # start it
+#   docker compose -f compose.local.yml down           # stop (data stays in the db-data volume)
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-techshare}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-techshare}
+      POSTGRES_DB: ${POSTGRES_DB:-techshare}
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
