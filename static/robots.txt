@@ -1,3 +1,7 @@
 # allow crawling everything by default
+
+# Nothing under /admin is a page a search engine should have: the queue holds write-ups nobody has
+# read yet, and every row carries a submitter's email address.
 User-agent: *
-Disallow:
+Disallow: /admin
+Allow: /

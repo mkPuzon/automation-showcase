@@ -250,6 +250,12 @@ button,
 	margin-bottom: 1.5rem;
 }
 
+/* a submission that went through but looked unusual, or a bounce from the rate limiter */
+.notice--warning {
+	border-left-color: #d8c48a;
+	background: #fdfaf1;
+}
+
 /* body of a project, rendered from sanitized Markdown */
 .prose {
 	max-width: 46rem;
@@ -421,4 +427,416 @@ button,
 	margin-right: 0.5rem;
 	text-decoration: none;
 	display: inline-block;
+}
+
+/* --- admin: the sign-in page, the queue, the editor ----------------------------------------- */
+
+/* Like the rest of this file this is not a design, it is legibility: the admin screens were built
+   before the visual pass (see TODO) and get the same tokens as the public pages meanwhile. */
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.admin-signin {
+	max-width: 28rem;
+}
+
+.admin-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--gap);
+	align-items: center;
+	justify-content: space-between;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0.6rem 0.9rem;
+	margin-bottom: 1.25rem;
+}
+
+.admin-bar__brand {
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.admin-bar__right {
+	display: flex;
+	align-items: center;
+	gap: 0.9rem;
+}
+
+.admin-bar__right form {
+	margin: 0;
+}
+
+.admin-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin-bottom: 1rem;
+}
+
+.admin-tabs a {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	padding: 0.25rem 0.75rem;
+	text-decoration: none;
+}
+
+.admin-tabs a[aria-current='page'] {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--accent-ink);
+}
+
+.admin-queue-scroll {
+	overflow-x: auto;
+}
+
+/* A queue row is wide on purpose: the reviewer decides from title + who sent it + how long it has
+   been waiting, and that is easier to read across than stacked. */
+.admin-queue {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.admin-queue :is(th, td) {
+	text-align: left;
+	vertical-align: top;
+	padding: 0.6rem 0.5rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.admin-queue tbody th {
+	font-weight: 600;
+	min-width: 16rem;
+}
+
+.admin-queue :is(.admin-queue__file, .admin-queue__email) {
+	display: block;
+	font-weight: 400;
+	font-size: 0.82rem;
+	color: var(--muted);
+	overflow-wrap: anywhere;
+}
+
+.admin-queue__public {
+	display: inline-block;
+	margin-top: 0.3rem;
+	font-size: 0.85rem;
+}
+
+.admin-editor__header {
+	display: grid;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+@media (min-width: 60rem) {
+	.admin-editor__header {
+		grid-template-columns: 2fr 1fr;
+	}
+}
+
+.admin-editor__who {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0.9rem 1rem;
+	margin: 0;
+	font-size: 0.85rem;
+}
+
+.admin-editor__who dt {
+	font-weight: 600;
+	color: var(--muted);
+	margin-top: 0.55rem;
+}
+
+.admin-editor__who dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.admin-form {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.admin-form--row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: flex-end;
+}
+
+.admin-form--row .field {
+	flex: 1 1 16rem;
+	margin-bottom: 0;
+}
+
+.admin-form__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+}
+
+.admin-form__choice {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.admin-preview {
+	border: 1px dashed var(--line);
+	border-radius: var(--radius);
+	padding: 1rem 1.1rem;
+	margin-bottom: 1.5rem;
+}
+
+.admin-section {
+	margin-bottom: 1.75rem;
+}
+
+.admin-section--danger {
+	border-top: 1px solid var(--line);
+	padding-top: 1rem;
+}
+
+.field--check label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	font-weight: 500;
+}
+
+.field--check input {
+	width: auto;
+	margin-top: 0.2rem;
+}
+
+.button--danger {
+	background: var(--danger);
+	border-color: var(--danger);
+	color: #fff;
+}
+
+/* --- admin: the sign-in page, the queue, the editor ----------------------------------------- */
+
+/* Like the rest of this file this is not a design, it is legibility: the admin screens were built
+   before the visual pass (see TODO) and get the same tokens as the public pages meanwhile. */
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.admin-signin {
+	max-width: 28rem;
+}
+
+.admin-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--gap);
+	align-items: center;
+	justify-content: space-between;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0.6rem 0.9rem;
+	margin-bottom: 1.25rem;
+}
+
+.admin-bar__brand {
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.admin-bar__right {
+	display: flex;
+	align-items: center;
+	gap: 0.9rem;
+}
+
+.admin-bar__right form {
+	margin: 0;
+}
+
+.admin-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	margin-bottom: 1rem;
+}
+
+.admin-tabs a {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	padding: 0.25rem 0.75rem;
+	text-decoration: none;
+}
+
+.admin-tabs a[aria-current='page'] {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: var(--accent-ink);
+}
+
+.admin-queue-scroll {
+	overflow-x: auto;
+}
+
+/* A queue row is wide on purpose: the reviewer decides from title + who sent it + how long it has
+   been waiting, and that is easier to read across than stacked. */
+.admin-queue {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.admin-queue :is(th, td) {
+	text-align: left;
+	vertical-align: top;
+	padding: 0.6rem 0.5rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.admin-queue tbody th {
+	font-weight: 600;
+	min-width: 16rem;
+}
+
+.admin-queue :is(.admin-queue__file, .admin-queue__email) {
+	display: block;
+	font-weight: 400;
+	font-size: 0.82rem;
+	color: var(--muted);
+	overflow-wrap: anywhere;
+}
+
+.admin-queue__public {
+	display: inline-block;
+	margin-top: 0.3rem;
+	font-size: 0.85rem;
+}
+
+.admin-editor__header {
+	display: grid;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+@media (min-width: 60rem) {
+	.admin-editor__header {
+		grid-template-columns: 2fr 1fr;
+	}
+}
+
+.admin-editor__who {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 0.9rem 1rem;
+	margin: 0;
+	font-size: 0.85rem;
+}
+
+.admin-editor__who dt {
+	font-weight: 600;
+	color: var(--muted);
+	margin-top: 0.55rem;
+}
+
+.admin-editor__who dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.admin-form {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	padding: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.admin-form--row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: flex-end;
+}
+
+.admin-form--row .field {
+	flex: 1 1 16rem;
+	margin-bottom: 0;
+}
+
+.admin-form__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.6rem;
+}
+
+.admin-form__choice {
+	display: flex;
+	flex-direction: column;
+	gap: 0.2rem;
+}
+
+.admin-preview {
+	border: 1px dashed var(--line);
+	border-radius: var(--radius);
+	padding: 1rem 1.1rem;
+	margin-bottom: 1.5rem;
+}
+
+.admin-section {
+	margin-bottom: 1.75rem;
+}
+
+.admin-section--danger {
+	border-top: 1px solid var(--line);
+	padding-top: 1rem;
+}
+
+.field--check label {
+	display: flex;
+	gap: 0.5rem;
+	align-items: flex-start;
+	font-weight: 500;
+}
+
+.field--check input {
+	width: auto;
+	margin-top: 0.2rem;
+}
+
+.button--danger {
+	background: var(--danger);
+	border-color: var(--danger);
+	color: #fff;
 }

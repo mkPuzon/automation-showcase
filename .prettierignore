@@ -7,3 +7,13 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Python (api/) — virtualenv, caches, dev uploads
+api/.venv/
+__pycache__/
+api/.pytest_cache/
+api/data/
+
+# Hand-written project docs: prettier churn here is noise
+AGENTS.md
+TODO.md

@@ -1,6 +1,7 @@
 /** Shared sample projects for the Explore component tests (not imported by app code). */
 
-import type { ProjectDetail, ProjectSummary, SubmitterBrief } from '#lib/types';
+import type { SubmissionValues } from '#lib/validation';
+import type { ProjectDetail, ProjectSummary, SubmissionResult, SubmitterBrief } from '#lib/types';
 
 const marie: SubmitterBrief = {
 	id: 1,
@@ -78,3 +79,24 @@ export const detail: ProjectDetail = {
 /** The shape FastAPI produces for a link: target/rel are set by api/app/rendering.py. */
 export const renderedWithLink =
 	'<p>Read the <a href="https://example.colby.edu/roster" target="_blank" rel="noopener noreferrer nofollow">roster sheet</a>.</p>';
+
+/** A submission that passes every rule in src/lib/validation.ts — the API client's happy path. */
+export const submissionValues: SubmissionValues = {
+	first_name: 'Jessie',
+	last_name: 'Chen',
+	email: 'jessie.chen@colby.edu',
+	department: 'Computational Science',
+	title: 'Renaming 400 scanned syllabi without touching the filenames by hand',
+	technologies: ['Python', 'zsh'],
+	contributors: ['Owen Brantley']
+};
+
+/** What `POST /api/submissions` hands back for a fresh write-up — the receipt's happy path. */
+export const pendingSubmission: SubmissionResult = {
+	id: 41,
+	slug: 'renaming-scanned-syllabi-2026-10-05-aa04',
+	title: 'Renaming 400 scanned syllabi without touching the filenames by hand',
+	status: 'pending',
+	created_at: '2026-10-05T14:30:00Z',
+	warning: null
+};
