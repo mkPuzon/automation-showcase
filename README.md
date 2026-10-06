@@ -4,9 +4,9 @@ Where Colby staff and faculty share automations, tools, and tips. Someone writes
 in a Google Doc, uploads the `.docx`, the site parses it into a project page. No user accounts —
 anyone on campus can browse and submit; admins publish.
 
-Status: **MVP Phase 4** — an admin signs in at `/admin`, reads the queue, edits a write-up, changes its
-status or deletes it. Phase 5 is hardening and the production compose files. See [TODO.md](TODO.md)
-for phases.
+Status: **MVP Phase 4 done** — an admin signs in at `/admin`, reads the queue, edits a write-up, changes
+its status or deletes it. Phase 5 is hardening and the production compose files. See
+[TODO.md](TODO.md) for phases.
 
 ## Stack
 
@@ -44,6 +44,9 @@ Check it is wired up:
 curl -s localhost:8123/api/health          # {"status":"ok","database":"up",...}
 curl -s localhost:8123/api/projects | head  # 3 published projects, no bodies
 open http://localhost:5173                 # whatever port `npm run dev` reported, if not this one
+
+# 401 here (not 404) = the admin routes are live; the browser never sends that token, SvelteKit does
+curl -s -o /dev/null -w '%{http_code}\n' 'localhost:8123/api/admin/projects?status=pending'
 ```
 
 ## Environment
@@ -88,13 +91,21 @@ Three ways the wiring goes wrong, and none of them used to be loud:
 - **Explore renders zero projects.** A 404 from `GET /api/projects` is a fault, not an empty shelf, so
   it is now the API-problem notice rather than "nothing is published yet". Only a 404 for one slug is
   a real 404.
-- **The API answers with routes the code no longer has.** An `uvicorn` started before those routes
-  existed serves no `/api/submissions` and no `/api/admin/*` at all, and answers 404 for both.
-  `npm run api:dev` passes `--reload`; check what a live process actually serves with:
+- **The API answers with routes the code no longer has.** A `uvicorn` started before those routes
+  existed serves no `/api/submissions` and no `/api/admin/*` at all and answers 404 for both, which is
+  what the queue prints as `Error 503` while `/api/health` looks perfectly healthy. It has happened
+  twice: once to a wrong `API_URL`, and once to a hand-started `uvicorn` with no `--reload` that was
+  left running for days and never saw `routers/admin.py`. **Start the API with `npm run api:dev`,
+  never a bare `uv run uvicorn`**: only the npm script passes `--reload`, and without it the process
+  goes stale the moment a router changes. Ask a live process what it actually serves:
 
   ```sh
   curl -s localhost:8123/openapi.json | python3 -c "import json,sys; print(sorted(json.load(sys.stdin)['paths']))"
   ```
+
+  A current one lists eight paths, four of them under `/api/admin` (six operations once you count
+  methods). `src/lib/api.ts` runs this same check at startup (`missingApiRoutes`), which is why the
+  error could name a stale process instead of just saying _Not Found_.
 
 ## Layout
 

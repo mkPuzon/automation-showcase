@@ -7,7 +7,8 @@ it and renders it as a project page.
 There are no user accounts. Anyone on the campus network can browse and submit. Safeguards are
 anti-bot only. Only admins can edit or delete projects after submission.
 
-Status: **Phase 4 done** (admin review: sign-in, queue, editor, publish/reject, delete, slug control).
+Status: **Phase 4 done and committed** (`828fe9e`) — admin review: sign-in, queue, editor,
+publish/reject, delete, slug control. 198 web + 95 API tests green, `npm run check` and `lint` clean.
 Next up: Phase 5, hardening, docs and the production compose files.
 
 ---
@@ -308,25 +309,62 @@ rand -hex 32`), `PUBLIC_TEMPLATE_URL` (Google Doc template), `UPLOAD_DIR` (defau
 >   actually refuses anything.
 > - Left for later phases on purpose: the Playwright e2e (`submit → pending → admin publishes →
 >   Explore`, Phase 5) and any admin handling of the queue (Phase 4).
-> - ⚠️ **Four test files disappeared from the working tree during Phase 3** and were never committed,
->   so git cannot return them: `src/lib/api.spec.ts`, `src/tests/ui-contract.spec.ts`,
->   `src/routes/proj-page.spec.ts`, `src/lib/components/ProjectCard.svelte.spec.ts`. Nothing in this
->   session deleted them and `.gitignore` does not cover them. Until they come back from an
->   editor/Trash backup, the Phase 1/2 guards for the API client, the UI contract, the detail page and
->   the card are not running — the README's "tests that must stay green" list is optimistic until then.
+> - ⚠️ **Test files lost during Phase 3.** Four were deleted from the working tree without ever being
+>   committed, so git could not return them: `src/lib/api.spec.ts`, `src/tests/ui-contract.spec.ts`,
+>   `src/routes/proj-page.spec.ts`, `src/lib/components/ProjectCard.svelte.spec.ts`.
+>   **`api.spec.ts` is back** (13 tests, green, committed in `828fe9e`). **Three are still missing**:
+>   the UI contract, the project detail page and the card guards are not running. `route-contract.spec.ts`
+>   and `ProjectBrowser`/`ProjectBody.svelte.spec.ts` now cover some of the same ground; recreating the
+>   three proper specs is a Phase 5 item.
 
 ### Phase 4 — Admin
-- [ ] `/admin` login page (not linked from public nav): form action compares `ADMIN_PASSWORD` in
+- [x] `/admin` login page (not linked from public nav): form action compares `ADMIN_PASSWORD` in
       constant time, then `cookies.set` HttpOnly / `SameSite=Strict` / `Secure`-in-prod /
       `path: '/admin'` / no `Max-Age`; explicit logout action; `robots.txt` blocks `/admin`
-- [ ] `admin-session.ts`: HMAC-signed token with expiry, verified server-side on every `/admin`
+- [x] `admin-session.ts`: HMAC-signed token with expiry, verified server-side on every `/admin`
       `load`/action; failure → redirect to the login page (no client-only dashboard needed)
-- [ ] dashboard with pending / published / rejected / all filtering
-- [ ] edit project metadata + `body_markdown` in a textarea, live preview
-- [ ] status changes (pending / published / rejected) and delete with confirmation
-- [ ] explicit "update slug" control, separate from title editing
-- [ ] login throttling per IP in `hooks.server.ts`; `Cache-Control: no-store` on `/admin`
-- [ ] tests: login failure/success + session guard, publish transition, title edit leaves slug alone
+- [x] dashboard with pending / published / rejected / all filtering
+- [x] edit project metadata + `body_markdown` in a textarea, live preview
+- [x] status changes (pending / published / rejected) and delete with confirmation
+- [x] explicit "update slug" control, separate from title editing
+- [x] login throttling per IP in `hooks.server.ts`; `Cache-Control: no-store` on `/admin`
+- [x] tests: login failure/success + session guard, publish transition, title edit leaves slug alone
+
+> **Phase 4 notes.**
+> - Files: `api/app/{auth.py,routers/admin.py,queries/admin.py}`,
+>   `src/lib/{admin-session,admin-guard,admin-queue}.ts`,
+>   `src/lib/components/{AdminQueue,AdminProjectEditor}.svelte`, `src/routes/admin/**` (sign-in,
+>   `dashboard/` queue, `dashboard/[id]/` editor). FastAPI **verifies** the token and never issues one;
+>   it has no login route and never sees the password.
+> - `requireAdminToken(cookies)` is called by every admin `load` **and** every admin action: a form
+>   action does not run the layout's guard, so a bare `curl POST` to `?/delete` reaches the action and
+>   has to be stopped there.
+> - Four actions (`?/save`, `?/slug`, `?/status`, `?/delete`) on four endpoints. `?/save` never sends
+>   `slug` and never sends `status`, so neither moves as a side effect of fixing a typo; the slug moves
+>   only from its own field behind its own button. Delete needs the confirmation box ticked and takes
+>   the stored `.docx` with the row. Preview renders a draft the API never stored.
+> - `/api/admin` is the only surface that returns submitter emails, so it is the only one behind the
+>   bearer token. `hooks.server.ts` sets `Cache-Control: no-store` on every `/admin` response and caps
+>   sign-in at 10 attempts / 15 min per client; `robots.txt` disallows `/admin`.
+> - **Close-out check against the running stack, not just the tests:** unauthenticated
+>   `GET /api/admin/projects?status=pending` → **401** with a sentence a person can read;
+>   `/admin/dashboard` while signed out → **303 → /admin?out=expired**; `/openapi.json` lists all four
+>   `/api/admin` paths (six operations).
+> - **The `Error 503` on `GET /api/admin/projects?status=pending` was not a code fault.** The
+>   `uvicorn` on `:8123` had been started by hand — `uv run uvicorn app.main:app --host 127.0.0.1
+>   --port 8123`, **no `--reload`** — before `routers/admin.py` existed, so it served only
+>   `/api/health` and the two public `/api/projects` paths and answered 404 for all of `/api/admin/*`,
+>   which the web layer reports as 503. `/api/health` said `ok` the whole time, so nothing looked
+>   broken. `missingApiRoutes()` had the answer already (`/api/admin/projects` absent from
+>   `/openapi.json`), which is why the on-screen error named a stale process rather than saying
+>   *Not Found*. Fix = kill it and `npm run api:dev`. **Rule: never start the API with a bare
+>   `uv run uvicorn`** — without `--reload` the process goes stale the moment a router changes.
+>   Operator-facing version in the README troubleshooting section.
+> - Tests: **198 web** in 19 files (`admin-session` 40, `validation` 24, `antibot` 19,
+>   `AdminProjectEditor` 19, `api.spec` 13, `admin-guard` 12, `rate-limit` 11, `hooks.server` 10,
+>   `admin-queue`/`AdminQueue`/`route-contract` 5 each …) and **95 API** (`test_auth` 31,
+>   `test_validate` 21, `test_admin` 16, `test_submissions` 13, `test_docx` 9, `test_rendering` 5).
+>   `npm run check` 0 errors / 0 warnings, `npm run lint` clean.
 
 ---
 
@@ -340,20 +378,12 @@ rand -hex 32`), `PUBLIC_TEMPLATE_URL` (Google Doc template), `UPLOAD_DIR` (defau
         an `API_URL` aimed at another project's container on `:8000`, and nothing said so.
       - Done in the Phase 4.1 pass above: the same treatment for the submit path and for Explore.
       - Done: the startup line naming `API_URL` and what answered it.
-      - **Fixed (admin page `Error 503` on `GET /api/admin/projects?status=pending`)**: not a bug in
-        the code — the `uvicorn` on `:8123` had been started by hand as
-        `uv run uvicorn app.main:app --host 127.0.0.1 --port 8123`, i.e. **without `--reload`**, and
-        it predated `app/routers/admin.py`. It served only `/api/health` and the two public
-        `/api/projects` routes, so `/api/admin/*` answered 404 and the web layer reported 503. The
-        startup diagnostic had already named the cause correctly (`missingApiRoutes` saw
-        `/api/admin/projects` absent from `/openapi.json`). Killed that process, restarted with
-        `npm run api:dev`; `/openapi.json` now lists all six `/api/admin/*` routes, the unauthenticated
-        queue request answers **401** instead of 404, and `/admin/dashboard` correctly 303s to
-        `/admin?out=expired` when signed out. 95 API tests pass.
-        **Rule for everyone working locally: start the API with `npm run api:dev`, never a bare
-        `uv run uvicorn`** — without `--reload` the process goes stale the moment a router changes.
-        Confirm what a live process actually serves with the `openapi.json` one-liner in the README
-        troubleshooting section.
+      - Done: the stale-process trap that produced the admin page's `Error 503`, and the
+        `openapi.json` / 401-vs-404 checks that catch it. Write-up in the Phase 4 notes above; the
+        operator-facing version is in the README troubleshooting section.
+- [ ] Recreate the three Phase 3 test files that were lost and never committed:
+      `src/tests/ui-contract.spec.ts`, `src/routes/proj-page.spec.ts`,
+      `src/lib/components/ProjectCard.svelte.spec.ts` (see the Phase 3 notes)
 - [ ] Content-Security-Policy on pages that render submitted content (no inline scripts) — this is the
       main blast-radius limiter for the HttpOnly admin cookie, since those pages render `.docx` output
 - [ ] README: local setup (`compose.local.yml up db` → migrate/seed → `npm run dev` + `uvicorn`)
