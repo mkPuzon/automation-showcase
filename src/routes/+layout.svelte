@@ -43,5 +43,34 @@
 			<circle cx="21" cy="6" r="4.5" fill="#52d128" />
 		</svg>
 		Colby staff &amp; faculty sharing tools that save time.
+		<!-- the reviewed seal: the site's signature, rocked into the corner —
+		     everything here cleared review before it was hung -->
+		<svg class="footer-sticker" width="96" height="96" viewBox="0 0 128 128" aria-hidden="true">
+			<defs>
+				<path id="sticker-ring" d="M64,64 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
+			</defs>
+			<path
+				d="M116.00 64.00 A17.50 17.50 0 0 1 109.03 90.00 A17.50 17.50 0 0 1 90.00 109.03 A17.50 17.50 0 0 1 64.00 116.00 A17.50 17.50 0 0 1 38.00 109.03 A17.50 17.50 0 0 1 18.97 90.00 A17.50 17.50 0 0 1 12.00 64.00 A17.50 17.50 0 0 1 18.97 38.00 A17.50 17.50 0 0 1 38.00 18.97 A17.50 17.50 0 0 1 64.00 12.00 A17.50 17.50 0 0 1 90.00 18.97 A17.50 17.50 0 0 1 109.03 38.00 A17.50 17.50 0 0 1 116.00 64.00 Z"
+				fill="#ffe022"
+			/>
+			<text
+				fill="#2d5cb8"
+				font-family="Nunito, sans-serif"
+				font-weight="800"
+				font-size="9.5"
+				letter-spacing="1.7"
+			>
+				<textPath href="#sticker-ring">SAVE TIME FOR WHAT MATTERS</textPath>
+			</text>
+			<circle cx="64" cy="63" r="16.5" fill="#366bcf" />
+			<path
+				d="M56.5 63.5 L62 69 L72 57.5"
+				stroke="#ffe022"
+				stroke-width="3.5"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				fill="none"
+			/>
+		</svg>
 	</div>
 </footer>

@@ -83,7 +83,6 @@ spacing:
   gap: '1rem'
 components:
   button-primary:
-    backgroundColor: '{colors.blue}'
     textColor: '#ffffff'
     rounded: '{rounded.pill}'
     padding: '0.5rem 1.25rem'
@@ -117,7 +116,7 @@ it does not repaint it (see The Frozen Shelf Rule).
 - Cream paper ground; the DAI triad (blue / amber / green families) does real jobs
 - Archivo headings; Nunito body and UI; IBM Plex Mono only for code and the frozen cards
 - Pill buttons and chips, rounded panels (10–20px), 3px hard-stop triad stripe under header and atop footer
-- Scalloped yellow "reviewed" sticker on Explore; hand-drawn amber squiggle under the page name
+- Hand-drawn amber squiggle under the Explore page name, the drifting mark loose above it, and the reviewed seal rocked into the footer's bottom right
 - The card shelf stays printed and still inside the playful world
 
 ## Colors
@@ -172,7 +171,7 @@ Pending: amber tint `#fff3d1` + ink `#7a5200` + line `#ecd9a0`. Published: green
 
 One container, max-width 76rem, 1.25rem side padding. Sticky cream header with the triad-dot
 logo, pill nav (active = blue-tint pill), and the 3px triad stripe beneath. Explore reads
-top-down: display head + squiggle + lede + sticker → filter rail (pill search input, sentence-case
+top-down: display head + squiggle + lede (with the drifting mark loose over it) → filter rail (pill search input, sentence-case
 labels, blue result count) → the frozen plate grid. Content below the fold follows the same
 grammar: rounded panels and warm rules.
 
@@ -212,19 +211,37 @@ it; the playful world surrounds the shelf.
 ### Navigation
 
 - Sticky cream header, 3px triad stripe under. Logo: three overlapping sticker dots (blue/amber/green, 2px cream stroke) that tumble on hover; Nunito 800 wordmark. Links: pills; active = blue-tint ground, blue-deep text.
-- Footer: 3px triad stripe atop, mini triad-dot cluster before the line.
+- Footer: 3px triad stripe atop, mini triad-dot cluster before the line, and the reviewed seal rocked into the bottom right.
 
-### The Reviewed Sticker (signature)
+### The Reviewed Seal (signature)
 
-A scalloped yellow SVG sticker, rotated 8°, at the Explore head's top right (hidden under 56rem):
-ring text `REVIEWED · BY A COLLEAGUE ·` in blue-deep Nunito 800 around a blue check. It rocks
-gently (7s ease-in-out) unless reduced motion is set. It certifies the shelf, not a plate. No
-other page may add a sticker.
+A scalloped yellow SVG sticker — ring text `SAVE TIME FOR WHAT MATTERS` in blue-deep Nunito 800
+around a blue check — rotated 8° and rocked gently (7s ease-in-out) unless reduced motion is set.
+It lives in exactly one place: the footer's bottom right, overhanging the triad stripe, where it
+certifies the whole site. It is pointerless (it covers, it never blocks) and shrinks to 72px
+under 48rem so the footer line stays clear. No page may add its own sticker.
 
 ### The Squiggle
 
 A hand-drawn amber underline (`stroke-linecap: round`, Q/T path) under the Explore display head.
 Decoration with one home; do not repeat it per-section.
+
+### The Drifting Mark (Explore only)
+
+The logo's three sticker dots, cut loose on the free ground just right of the explore head's text
+column (the lede stops at 40rem; the patch starts at `min(42rem, calc(100% - 13.5rem))` and the
+layer is hidden under 60rem, where the free ground beside the text gets too tight). Absolutely
+anchored to the head — pointerless, behind content — so it scrolls away with the page rather than
+floating over the shelf. Inside it, a field frame inset 67px holds the roaming bounds; each dot
+its own size (blue 126px, green 83px, amber 63px) follows its own hand-set waypoint loop
+(53s / 41s / 61s, eased leg by leg, so it reads as wandering rather than orbiting), with a 1.06
+scale breath apiece. Motion runs on compositor transforms — a full-field wrapper box per dot is
+carried by percent translates (they resolve against the wrapper's own box, which is the field)
+and the circle is the wrapper's ::after — so the wander never stutters on main-thread work. The
+three tempos share no simple beat, so the dots constantly drift together
+and apart — overlapping when they cross, the 3px cream strokes keeping them readable as three,
+and the logo re-forming and scattering on no schedule. Shown only at ≥60rem and under
+`prefers-reduced-motion: no-preference`.
 
 ## Do's and Don'ts
 
@@ -241,5 +258,5 @@ Decoration with one home; do not repeat it per-section.
 - **Don't** round, tint, or mono-swap anything inside the FROZEN card-grid section of `app.css`.
 - **Don't** reach for gradients, glass, emoji-as-icons, or drop-shadowed everything.
 - **Don't** set body text in mono or labels in small-caps-stamp style — the voices don't swap.
-- **Don't** repeat the sticker or the squiggle on other pages; one shelf, one seal, one underline.
+- **Don't** repeat the squiggle or add page-level stickers; the seal lives only in the footer, the underline only under the Explore head.
 - **Don't** invent new triad colors; sample from `dai_logo.png` and derive tints instead.

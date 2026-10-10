@@ -378,15 +378,19 @@ main.container {
 	margin: 1.1rem 0 0;
 }
 
-.explore-sticker {
+/* the reviewed seal: the site's signature, rocked into the footer's bottom
+   right corner. It overhangs the stripe onto the page above, so it is
+   pointerless — it covers, it never blocks. */
+.footer-sticker {
 	position: absolute;
-	top: 0.25rem;
-	right: 0;
+	right: 1.25rem;
+	bottom: 1rem;
 	transform: rotate(8deg);
+	pointer-events: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.explore-sticker {
+	.footer-sticker {
 		animation: sticker-rock 7s ease-in-out infinite;
 	}
 }
@@ -401,9 +405,214 @@ main.container {
 	}
 }
 
-@media (max-width: 56rem) {
-	.explore-sticker {
-		display: none;
+@media (max-width: 48rem) {
+	.footer-sticker {
+		width: 72px;
+		height: 72px;
+	}
+
+	/* keep the footer's line clear of the seal on small screens */
+	.site-footer .container {
+		padding-right: 6rem;
+	}
+}
+
+/* ---- Explore: the wandering mark ------------------------------------------ */
+
+/* The logo's three sticker dots, cut loose on the free ground just right of the
+   head's text — each its own size (126 / 63 / 83px), each ambling through a
+   shared field on a waypoint loop of its own and at its own pace (53s / 41s /
+   61s), so the three are always drifting together or apart and the logo keeps
+   re-forming and scattering for no reason a clock could predict. Each loop
+   moves a full-field wrapper box with transforms — compositor-drawn, so the
+   amble stays smooth even when the main thread is busy — while the circle
+   itself is the wrapper's ::after; the legs are eased one by one, which reads
+   as wandering rather than orbiting. The layer belongs to the head itself, so
+   it scrolls away with the page; it is behind the content, pointerless, and
+   shown only where there is room for it and a visitor who has not asked for
+   stillness. */
+
+.logo-drift {
+	display: none;
+}
+
+@media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
+	.logo-drift {
+		display: block;
+		position: absolute;
+		/* the free ground just right of the head's text column (the lede stops
+		   at 40rem): anchored to the head, so it scrolls away with the page */
+		top: 0.25rem;
+		right: 0.5rem;
+		bottom: 1.5rem;
+		/* 1.5rem clear of the lede's 40rem measure */
+		left: min(42rem, calc(100% - 13.5rem));
+		pointer-events: none;
+		z-index: -1;
+		/* the wandering wrappers are full-field boxes that transformed past the
+		   patch's edge would otherwise hand to the document as scrollable
+		   overflow; the circles themselves never reach this close, so the clip
+		   is never seen */
+		overflow: clip;
+	}
+
+	/* the field: the roaming frame, inset one big dot's radius plus change, so
+	   even a waypoint at the frame's edge leaves the dot inside the head —
+	   clear of the lede's last characters, the viewport edge, the header, and
+	   the head's hairline rule */
+	.logo-drift__field {
+		position: absolute;
+		inset: 67px;
+	}
+
+	/* each dot is a full-field wrapper the loop carries with transforms (percent
+	   translates resolve against the wrapper's own box, which is the field), and
+	   the circle itself is the wrapper's ::after riding the wrapper's corner */
+	.logo-drift__dot {
+		position: absolute;
+		inset: 0;
+		will-change: transform;
+	}
+
+	.logo-drift__dot--blue {
+		animation: logo-wander-blue 53s ease-in-out -9s infinite;
+	}
+
+	.logo-drift__dot--amber {
+		animation: logo-wander-amber 41s ease-in-out -25s infinite;
+	}
+
+	.logo-drift__dot--green {
+		animation: logo-wander-green 61s ease-in-out -44s infinite;
+	}
+
+	.logo-drift__dot::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		border-radius: 50%;
+		/* centered on the waypoint the wrapper has been carried to */
+		translate: -50% -50%;
+		/* the sticker stroke, scaled up: invisible on the cream ground, but it
+		   keeps the dots readable as three when they wander into one another */
+		box-shadow: 0 0 0 3px var(--ground);
+	}
+
+	.logo-drift__dot--blue::after {
+		width: 126px;
+		height: 126px;
+		background: var(--blue);
+		animation: logo-drift-pulse 11s ease-in-out -3s infinite;
+	}
+
+	.logo-drift__dot--amber::after {
+		width: 63px;
+		height: 63px;
+		background: var(--amber);
+		animation: logo-drift-pulse 14s ease-in-out -8s infinite;
+	}
+
+	.logo-drift__dot--green::after {
+		width: 83px;
+		height: 83px;
+		background: var(--green);
+		animation: logo-drift-pulse 17s ease-in-out -12s infinite;
+	}
+}
+
+/* three ambling loops, waypoint by waypoint (percent translates of the field,
+   drawn by the compositor). The durations share no simple beat, so close
+   passes and little gatherings happen on nature's schedule, not a timer's. */
+@keyframes logo-wander-blue {
+	0% {
+		transform: translate(10%, 30%);
+	}
+	14% {
+		transform: translate(34%, 12%);
+	}
+	30% {
+		transform: translate(58%, 40%);
+	}
+	44% {
+		transform: translate(80%, 15%);
+	}
+	58% {
+		transform: translate(90%, 62%);
+	}
+	72% {
+		transform: translate(62%, 85%);
+	}
+	86% {
+		transform: translate(28%, 70%);
+	}
+	100% {
+		transform: translate(10%, 30%);
+	}
+}
+
+@keyframes logo-wander-amber {
+	0% {
+		transform: translate(88%, 55%);
+	}
+	14% {
+		transform: translate(66%, 20%);
+	}
+	28% {
+		transform: translate(42%, 65%);
+	}
+	42% {
+		transform: translate(20%, 30%);
+	}
+	56% {
+		transform: translate(40%, 85%);
+	}
+	70% {
+		transform: translate(66%, 45%);
+	}
+	84% {
+		transform: translate(85%, 78%);
+	}
+	100% {
+		transform: translate(88%, 55%);
+	}
+}
+
+@keyframes logo-wander-green {
+	0% {
+		transform: translate(45%, 78%);
+	}
+	16% {
+		transform: translate(18%, 55%);
+	}
+	32% {
+		transform: translate(36%, 18%);
+	}
+	48% {
+		transform: translate(64%, 35%);
+	}
+	62% {
+		transform: translate(50%, 70%);
+	}
+	78% {
+		transform: translate(78%, 60%);
+	}
+	90% {
+		transform: translate(88%, 30%);
+	}
+	100% {
+		transform: translate(45%, 78%);
+	}
+}
+
+/* a slow breath apiece, out of phase — the floating inside the wandering */
+@keyframes logo-drift-pulse {
+	0%,
+	100% {
+		scale: 1;
+	}
+	50% {
+		scale: 1.06;
 	}
 }
 
