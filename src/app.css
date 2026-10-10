@@ -1,23 +1,115 @@
-/* Placeholder global styles. Real visual design is deferred to later (see AGENTS.md / TODO #9):
-   this file only exists so the app is readable while the flows are being built. */
+/* ---------------------------------------------------------------------------
+   Colby Tech Share — global styles.
+
+   Visual world: "recess" — the campus craft table. A warm cream paper ground,
+   cut-paper color from the DAI mark (royal blue / periwinkle / sky, amber /
+   yellow / orange, green / kelly / lime), chunky rounded type (Nunito), pill
+   buttons and chips, rounded panels, hard-stop triad stripes, and a scalloped
+   reviewed sticker. Playful, but grown-up: flat color, no gradients-for-depth,
+   no emoji.
+
+   One deliberate holdout: the project card grid keeps the printed plate look
+   it had — square near-white faces, hairline rules, mono registration layer.
+   Its styles are pinned to literal values below (search "FROZEN").
+
+   Type is self-hosted (CSP is font-src 'self'; nothing loads from third
+   parties) in three voices: Archivo for headings (display, headlines, card
+   titles — the register of real work), Nunito for body and UI (the rounded,
+   friendly voice), and IBM Plex Mono for code and the cards' registration
+   layer. All OFL; woff2 in /static/fonts.
+--------------------------------------------------------------------------- */
+
+@font-face {
+	font-family: 'Archivo';
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/fonts/archivo-latin-var.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Nunito';
+	font-style: normal;
+	font-weight: 200 1000;
+	font-display: swap;
+	src: url('/fonts/nunito-latin-var.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'IBM Plex Mono';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/ibm-plex-mono-latin-400.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'IBM Plex Mono';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url('/fonts/ibm-plex-mono-latin-500.woff2') format('woff2');
+}
 
 :root {
-	--bg: #fdfdfc;
-	--surface: #ffffff;
-	--fg: #1b1b1a;
-	--muted: #5d5c58;
-	--line: #e3e2de;
-	--accent: #1f6f5c;
-	--accent-ink: #ffffff;
+	/* the paper */
+	--ground: #fff9ef; /* warm cream craft paper */
+	--surface: #fffdf8; /* raised paper: inputs, panels, chips */
+	--ground-cool: #fbf3e2; /* deeper cream: code blocks, quiet fills */
+	--ink: #262117; /* warm near-black ink */
+	--ink-2: #5f5748; /* secondary text */
+	--ink-3: #6f6553; /* small labels, dates, captions — also strong enough for input borders */
+	--line: #eadfc9; /* soft warm separator */
+	--line-strong: #6f6553; /* emphasis borders, input borders */
+	--placeholder: #7d7261; /* ≥4.5:1 on the surface */
+
+	/* the DAI triad (sampled from dai_logo.png) */
+	--blue: #366bcf; /* royal blue — links, primary actions, focus */
+	--blue-deep: #2d5cb8; /* hover/press step, text on tints */
+	--sky: #35b3fc;
+	--peri: #6198ff;
+	--amber: #ffb500;
+	--yellow: #ffe022;
+	--orange: #ff8b00;
+	--green: #52d128;
+	--kelly: #18c64e;
+	--lime: #b8d92d;
+
+	/* tints of the triad */
+	--blue-tint: #e8effc;
+	--amber-tint: #fff3d1;
+	--green-tint: #e7f9e3;
+	--orange-tint: #ffedd9;
+
+	/* status vocabulary: pending | published | rejected */
+	--pending-ink: #7a5200;
+	--pending-line: #ecd9a0;
+	--published-ink: #1a6b2a;
+	--published-line: #b7e5a4;
+	--rejected-ink: #a84b00;
+	--rejected-line: #f5cba3;
+
+	/* danger keeps a semantic red — destructive actions read as red everywhere */
 	--danger: #a32f24;
-	--radius: 8px;
+	--danger-press: #8a271e;
+	--danger-line: #ecc8c4;
+	--danger-tint: #fdeeec;
+
+	--font-display: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-sans: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+	--r-sm: 10px;
+	--r-md: 14px;
+	--r-lg: 20px;
+	--r-pill: 999px;
+
+	--ease: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 	--gap: 1rem;
-	font-family:
-		system-ui,
-		-apple-system,
-		'Segoe UI',
-		Roboto,
-		sans-serif;
+
+	/* the triad stripe: three flat color fields, D A I proportions */
+	--stripe: linear-gradient(90deg, var(--blue) 0 46%, var(--amber) 46% 78%, var(--green) 78% 100%);
 }
 
 *,
@@ -26,19 +118,33 @@
 	box-sizing: border-box;
 }
 
+html {
+	color-scheme: light;
+	scrollbar-width: thin;
+	scrollbar-color: #ddceac transparent;
+}
+
 body {
 	margin: 0;
-	background: var(--bg);
-	color: var(--fg);
+	background: var(--ground);
+	color: var(--ink);
+	font-family: var(--font-sans);
+	font-size: 1rem;
+	font-weight: 450;
 	line-height: 1.55;
 	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
 }
 
 h1,
 h2,
 h3 {
-	line-height: 1.2;
+	font-family: var(--font-display);
+	line-height: 1.15;
 	margin: 0 0 0.5rem;
+	font-weight: 500;
+	letter-spacing: -0.015em;
+	text-wrap: balance;
 }
 
 h1 {
@@ -53,24 +159,67 @@ p {
 }
 
 a {
-	color: var(--accent);
-	text-underline-offset: 2px;
+	color: var(--blue);
+	text-underline-offset: 3px;
+	text-decoration-thickness: 1.5px;
+}
+
+::selection {
+	background: var(--yellow);
+	color: var(--ink);
 }
 
 :focus-visible {
-	outline: 2px solid var(--accent);
+	outline: 2px solid var(--blue);
 	outline-offset: 2px;
 }
 
-/* layout */
+input,
+select,
+textarea {
+	caret-color: var(--blue);
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-thumb {
+	background: #ddceac;
+	border: 3px solid var(--ground);
+	border-radius: var(--r-pill);
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* the one-sentence pitch under a display head */
+.lede {
+	max-width: 40rem;
+	font-size: 1.0938rem;
+	color: var(--ink-2);
+}
+
+/* ---- layout -------------------------------------------------------------- */
+
 .site-header {
-	border-bottom: 1px solid var(--line);
-	background: var(--surface);
+	background: var(--ground);
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+
+/* the triad stripe — the DAI mark's three color fields, run under the header */
+.site-header::after {
+	content: '';
+	display: block;
+	height: 3px;
+	background: var(--stripe);
 }
 
 .site-header__inner,
 .container {
-	max-width: 68rem;
+	max-width: 76rem;
 	margin: 0 auto;
 	padding: 0 1.25rem;
 }
@@ -80,66 +229,367 @@ a {
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--gap);
-	min-height: 3.5rem;
+	min-height: 4rem;
 	flex-wrap: wrap;
 }
 
 .site-title {
-	font-weight: 650;
+	font-family: var(--font-sans);
+	font-size: 1.0625rem;
+	font-weight: 800;
+	letter-spacing: -0.005em;
 	text-decoration: none;
-	color: var(--fg);
+	color: var(--ink);
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.75rem 0;
+	margin: -0.75rem 0;
+}
+
+.site-title svg {
+	display: block;
+}
+
+/* the logo cluster is three sticker dots; they tumble a little when the
+   wordmark is pointed at */
+.logo-mark circle {
+	transform-box: fill-box;
+	transform-origin: center;
+	transition: transform 280ms var(--ease-spring);
+}
+
+.site-title:hover .logo-mark circle:nth-of-type(1),
+.site-title:focus-visible .logo-mark circle:nth-of-type(1) {
+	transform: translate(-1.5px, -1.5px) rotate(-10deg);
+}
+
+.site-title:hover .logo-mark circle:nth-of-type(2),
+.site-title:focus-visible .logo-mark circle:nth-of-type(2) {
+	transform: translate(1.5px, -2px) rotate(8deg);
+}
+
+.site-title:hover .logo-mark circle:nth-of-type(3),
+.site-title:focus-visible .logo-mark circle:nth-of-type(3) {
+	transform: translate(0.5px, 1.5px) rotate(-6deg);
 }
 
 .nav {
 	display: flex;
-	gap: 1.25rem;
+	gap: 0.4rem;
+	flex-wrap: wrap;
 }
 
 .nav a {
-	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 750;
+	letter-spacing: 0;
+	color: var(--ink-2);
 	text-decoration: none;
-	padding: 0.5rem 0;
+	padding: 0.42rem 1rem;
+	border-radius: var(--r-pill);
+	transition:
+		color 150ms var(--ease),
+		background 150ms var(--ease);
+}
+
+.nav a:hover {
+	color: var(--ink);
+	background: #f6ecd8;
 }
 
 .nav a[aria-current='page'] {
-	color: var(--fg);
-	border-bottom: 2px solid var(--accent);
+	color: var(--blue-deep);
+	background: var(--blue-tint);
 }
 
 main {
-	padding: 2rem 0 4rem;
+	padding: 2.75rem 0 4.5rem;
+}
+
+/* `main.container` would otherwise lose this vertical padding to the .container rule
+   (class beats element), pinning the page head to the header and the footer to the grid. */
+main.container {
+	padding-top: 2.75rem;
+	padding-bottom: 4.5rem;
 }
 
 .site-footer {
-	border-top: 1px solid var(--line);
-	color: var(--muted);
-	font-size: 0.875rem;
-	padding: 1.25rem 0;
+	position: relative;
+	padding: 1.75rem 0 2.5rem;
 }
 
-/* cards + lists */
-.card-grid {
+.site-footer::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 3px;
+	background: var(--stripe);
+}
+
+.site-footer .container {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 650;
+	letter-spacing: 0;
+	color: var(--ink-3);
+}
+
+.site-footer svg {
+	display: block;
+	flex: none;
+}
+
+/* ---- Explore: the head ---------------------------------------------------- */
+
+.explore-head {
+	position: relative;
 	display: grid;
-	gap: var(--gap);
-	grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+	grid-template-columns: minmax(0, 1fr);
+	gap: 1.25rem 3rem;
+	align-items: end;
+	padding-bottom: 2.25rem;
+	border-bottom: 1px solid var(--line);
+}
+
+.explore-head h1 {
+	font-size: clamp(2.5rem, 4.5vw, 4rem);
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	line-height: 1.02;
+	margin: 0;
+}
+
+/* a hand-drawn amber underline for the page's name */
+.squiggle {
+	display: block;
+	width: 7.5rem;
+	height: 12px;
+	margin-top: 0.35rem;
+}
+
+.explore-head .lede {
+	margin: 1.1rem 0 0;
+}
+
+.explore-sticker {
+	position: absolute;
+	top: 0.25rem;
+	right: 0;
+	transform: rotate(8deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.explore-sticker {
+		animation: sticker-rock 7s ease-in-out infinite;
+	}
+}
+
+@keyframes sticker-rock {
+	0%,
+	100% {
+		transform: rotate(6deg);
+	}
+	50% {
+		transform: rotate(11deg);
+	}
+}
+
+@media (max-width: 56rem) {
+	.explore-sticker {
+		display: none;
+	}
+}
+
+/* ---- Explore: the filter rail --------------------------------------------- */
+
+.filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem 1.5rem;
+	align-items: end;
+	padding: 1.25rem 0;
+	border-bottom: 1px solid var(--line);
+}
+
+.filters__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+	flex: 0 1 12rem;
+	min-width: 10rem;
+}
+
+.filters__field--search {
+	flex: 1 1 18rem;
+}
+
+.filters__field label,
+.filters__field--search label {
+	font-family: var(--font-sans);
+	font-size: 0.8125rem;
+	font-weight: 750;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--ink-2);
+	margin: 0;
+}
+
+.filters__clear {
+	align-self: end;
+}
+
+.results-count {
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 800;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--blue-deep);
+	margin: 0 0 0 auto;
+	padding-bottom: 0.45rem;
+	white-space: nowrap;
+}
+
+/* ---- the plate grid — FROZEN ----------------------------------------------
+   The project card shelf keeps its printed plate-section look: square
+   near-white faces, hairline rules, mono registration numbers, tags and
+   dates, and the registration crosshair. These styles are pinned to literal
+   values on purpose — the playful world surrounds the shelf, it does not
+   repaint it. Do not retheme this section. */
+
+.card-grid {
+	margin-top: 2.25rem;
+	display: grid;
+	border: 1px solid #c9c7c4;
+	grid-template-columns: 1fr;
+}
+
+/* Cards carry their own hairline and overlap their neighbour's by 1px, so full
+   rows read as one registered sheet while an incomplete last row simply ends —
+   no painted ground showing through empty tracks. */
+.card-grid > * {
+	border: 1px solid #c9c7c4;
+	margin: 0 -1px -1px 0;
+}
+
+@media (min-width: 42rem) {
+	.card-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (min-width: 66rem) {
+	.card-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
 }
 
 .card {
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 1rem 1.1rem;
+	background: #fbfafc;
+	border: 1px solid #c9c7c4;
+	border-radius: 0;
+	padding: 1.5rem 1.5rem 1.25rem;
+	/* the shelf's prose voice is Archivo, as printed — the playful world's Nunito
+	   stays outside the frame */
+	font-family: var(--font-display);
 }
 
-.card h2,
-.card h3 {
-	font-size: 1.05rem;
-	margin-bottom: 0.35rem;
+.project-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	transition:
+		transform 160ms var(--ease),
+		box-shadow 160ms var(--ease);
 }
 
-.meta {
-	color: var(--muted);
+/* the registration crosshair, top-left of every plate */
+.project-card::before {
+	content: '';
+	position: absolute;
+	top: -6px;
+	left: -6px;
+	width: 12px;
+	height: 12px;
+	background:
+		linear-gradient(#16181a, #16181a) center / 1px 12px no-repeat,
+		linear-gradient(#16181a, #16181a) center / 12px 1px no-repeat;
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+/* focus answers in one register across the shelf: the plate lifts, the rest
+   of the grid stays exactly where it is */
+@media (hover: hover) {
+	.card-grid .project-card:hover {
+		transform: translateY(-4px);
+		z-index: 1;
+		box-shadow:
+			0 14px 28px rgba(22, 24, 26, 0.09),
+			0 2px 6px rgba(22, 24, 26, 0.07);
+	}
+}
+
+.card-grid .project-card:focus-within {
+	transform: translateY(-4px);
+	z-index: 1;
+	box-shadow:
+		0 14px 28px rgba(22, 24, 26, 0.09),
+		0 2px 6px rgba(22, 24, 26, 0.07);
+}
+
+.project-card__no {
+	font-family: var(--font-mono);
+	font-size: 0.6563rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: #6b6963;
+	margin: 0 0 0.45rem;
+}
+
+.project-card__title {
+	font-size: 1.1875rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	line-height: 1.25;
+	margin: 0;
+	text-wrap: pretty;
+}
+
+.project-card__title a {
+	color: #16181a;
+	text-decoration: none;
+	transition: color 140ms var(--ease);
+	/* a title link is the card's primary tap target: widen the hit area to ~44px
+	   without moving the visual box */
+	display: inline-block;
+	padding: 0.6rem 0.6rem;
+	margin: -0.6rem -0.6rem;
+}
+
+.project-card__title a:hover {
+	color: var(--blue);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+}
+
+.project-card .meta {
+	color: #4c4a46;
 	font-size: 0.875rem;
+	margin: 0.35rem 0 0;
+}
+
+.project-card .meta b {
+	font-weight: 550;
+	color: #16181a;
 }
 
 .tag-list {
@@ -147,76 +597,167 @@ main {
 	flex-wrap: wrap;
 	gap: 0.4rem;
 	list-style: none;
-	margin: 0.5rem 0 0;
+	margin: 1rem 0 0;
 	padding: 0;
 }
 
-.tag {
-	border: 1px solid var(--line);
-	border-radius: 999px;
-	padding: 0.1rem 0.55rem;
-	font-size: 0.8rem;
-	color: var(--muted);
+.project-card .tag-list {
+	margin-top: auto;
+	padding-top: 1.1rem;
 }
 
-/* status vocabulary: pending | published | rejected */
+/* the mono registration chip — frozen with the card shelf, used there and on
+   the project page's "Uses" row */
+.tag {
+	font-family: var(--font-mono);
+	font-size: 0.6563rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: #4c4a46;
+	border: 1px solid #c9c7c4;
+	border-radius: 0;
+	padding: 0.15rem 0.5rem;
+}
+
+.project-card .project-card__date {
+	margin-top: 0.55rem;
+	padding-top: 0;
+	font-family: var(--font-mono);
+	font-size: 0.6563rem;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: #6b6963;
+}
+
+.meta {
+	color: var(--ink-2);
+	font-size: 0.875rem;
+}
+
+/* ---- empty states ---------------------------------------------------------- */
+
+.empty {
+	border: 2px dashed #ddceac;
+	border-radius: var(--r-lg);
+	background: var(--surface);
+	padding: 2.5rem 1.75rem;
+	margin: 2rem 0 0;
+	color: var(--ink-2);
+	display: flex;
+	gap: 0.75rem;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.empty a {
+	color: var(--blue);
+}
+
+/* ---- notices --------------------------------------------------------------- */
+
+.notice {
+	background: var(--surface);
+	border: 1.5px solid var(--line-strong);
+	border-radius: var(--r-md);
+	padding: 1rem 1.25rem;
+	margin-bottom: 1.5rem;
+}
+
+/* a submission that went through but looked unusual, or a bounce from the rate limiter */
+.notice--warning {
+	border-color: var(--amber);
+	background: var(--amber-tint);
+}
+
+/* ---- status vocabulary: pending | published | rejected --------------------- */
+
 .status {
 	display: inline-block;
+	font-family: var(--font-sans);
 	font-size: 0.75rem;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	border-radius: 999px;
-	padding: 0.1rem 0.6rem;
-	border: 1px solid var(--line);
-	color: var(--muted);
+	font-weight: 800;
+	letter-spacing: 0.02em;
+	border-radius: var(--r-pill);
+	padding: 0.18rem 0.7rem;
+	border: 1.5px solid transparent;
+	color: var(--ink-2);
 }
 
 .status--pending {
-	border-color: #d8c48a;
-	color: #7a5c05;
+	border-color: var(--pending-line);
+	color: var(--pending-ink);
+	background: var(--amber-tint);
 }
 
 .status--published {
-	border-color: #a9cdbf;
-	color: #1f6f5c;
+	border-color: var(--published-line);
+	color: var(--published-ink);
+	background: var(--green-tint);
 }
 
 .status--rejected {
-	border-color: #e2b4af;
-	color: var(--danger);
+	border-color: var(--rejected-line);
+	color: var(--rejected-ink);
+	background: var(--orange-tint);
 }
 
-/* forms */
+/* ---- forms ------------------------------------------------------------------ */
+
 label {
 	display: block;
-	font-weight: 550;
-	margin-bottom: 0.25rem;
+	font-weight: 700;
+	margin-bottom: 0.35rem;
 }
 
 input,
 select,
 textarea {
 	font: inherit;
+	font-size: 0.9375rem;
 	width: 100%;
-	padding: 0.5rem 0.6rem;
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
+	padding: 0.6rem 0.85rem;
+	border: 1.5px solid var(--ink-3);
+	border-radius: var(--r-md);
 	background: var(--surface);
-	color: inherit;
+	color: var(--ink);
+	transition:
+		border-color 140ms var(--ease),
+		box-shadow 140ms var(--ease);
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--placeholder);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+	outline: none;
+	border-color: var(--blue);
+	box-shadow: 0 0 0 4px var(--blue-tint);
+}
+
+select {
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%236f6553' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 0.75rem center;
+	padding-right: 2.3rem;
 }
 
 .field {
-	margin-bottom: 1rem;
+	margin-bottom: 1.1rem;
 }
 
 .hint,
 .error {
-	font-size: 0.85rem;
-	margin-top: 0.25rem;
+	font-size: 0.8125rem;
+	margin-top: 0.3rem;
 }
 
 .hint {
-	color: var(--muted);
+	color: var(--ink-2);
 }
 
 .error {
@@ -225,65 +766,174 @@ textarea {
 
 button,
 .button {
-	font: inherit;
-	font-weight: 550;
-	background: var(--accent);
-	color: var(--accent-ink);
-	border: 1px solid var(--accent);
-	border-radius: var(--radius);
-	padding: 0.5rem 0.9rem;
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 800;
+	letter-spacing: 0.01em;
+	text-transform: none;
+	background: var(--blue);
+	color: #ffffff;
+	border: 2px solid var(--blue);
+	border-radius: var(--r-pill);
+	padding: 0.5rem 1.25rem;
 	cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+	transition:
+		background 150ms var(--ease),
+		border-color 150ms var(--ease),
+		transform 180ms var(--ease-spring),
+		box-shadow 150ms var(--ease);
+}
+
+button:hover,
+.button:hover {
+	background: var(--blue-deep);
+	border-color: var(--blue-deep);
+	transform: translateY(-1px);
+	box-shadow: 0 6px 14px rgba(45, 92, 184, 0.28);
+}
+
+button:active,
+.button:active {
+	transform: translateY(0);
+	box-shadow: none;
 }
 
 .button--quiet {
 	background: var(--surface);
-	color: var(--fg);
-	border-color: var(--line);
+	color: var(--ink);
+	border-color: var(--ink-3);
 }
 
-.notice {
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-left: 3px solid var(--accent);
-	border-radius: var(--radius);
-	padding: 0.9rem 1rem;
+.button--quiet:hover {
+	background: var(--blue-tint);
+	color: var(--blue-deep);
+	border-color: var(--blue);
+	box-shadow: 0 6px 14px rgba(54, 107, 207, 0.16);
+}
+
+.button--danger {
+	background: var(--danger);
+	border-color: var(--danger);
+	color: #fff;
+}
+
+.button--danger:hover {
+	background: var(--danger-press);
+	border-color: var(--danger-press);
+	box-shadow: 0 6px 14px rgba(163, 47, 36, 0.25);
+}
+
+/* ---- project page ----------------------------------------------------------- */
+
+.breadcrumbs {
+	font-family: var(--font-sans);
+	font-size: 0.875rem;
+	font-weight: 750;
+	letter-spacing: 0;
+	text-transform: none;
 	margin-bottom: 1.5rem;
 }
 
-/* a submission that went through but looked unusual, or a bounce from the rate limiter */
-.notice--warning {
-	border-left-color: #d8c48a;
-	background: #fdfaf1;
+.breadcrumbs a {
+	color: var(--ink-2);
+	text-decoration: none;
+	padding: 0.3rem 0.85rem;
+	margin-left: -0.85rem;
+	border-radius: var(--r-pill);
+	transition:
+		color 140ms var(--ease),
+		background 140ms var(--ease);
+}
+
+.breadcrumbs a:hover {
+	color: var(--blue-deep);
+	background: var(--blue-tint);
+}
+
+.project__header {
+	border-bottom: 1px solid var(--line);
+	margin-bottom: 1.75rem;
+	padding-bottom: 1.5rem;
+}
+
+.project__header h1 {
+	font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	line-height: 1.08;
+}
+
+.project__meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 2.5rem;
+	margin: 1.25rem 0 0;
+}
+
+.project__meta dt {
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--blue-deep);
+}
+
+.project__meta dd {
+	margin: 0.25rem 0 0;
+}
+
+.project__meta .tag-list {
+	margin: 0;
+}
+
+.project__source {
+	border-top: 1px solid var(--line);
+	margin-top: 2.5rem;
+	padding-top: 1.25rem;
 }
 
 /* body of a project, rendered from sanitized Markdown */
 .prose {
-	max-width: 46rem;
+	max-width: 44rem;
 }
 
 .prose :is(h1, h2, h3) {
 	margin-top: 1.75rem;
+	letter-spacing: -0.01em;
 }
 
 .prose pre {
-	background: #f6f6f4;
+	background: var(--ground-cool);
 	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 0.75rem;
+	border-radius: var(--r-sm);
+	padding: 0.85rem 1rem;
 	overflow-x: auto;
 	font-size: 0.85rem;
 }
 
 .prose code {
-	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-	font-size: 0.9em;
+	font-family: var(--font-mono);
+	font-size: 0.875em;
+	background: var(--ground-cool);
+	border-radius: 6px;
+	padding: 0.08em 0.35em;
+}
+
+.prose pre code {
+	background: transparent;
+	padding: 0;
+	border-radius: 0;
 }
 
 .prose blockquote {
-	margin: 1rem 0;
-	padding-left: 1rem;
-	border-left: 3px solid var(--line);
-	color: var(--muted);
+	margin: 1.25rem 0;
+	padding: 0.75rem 1.1rem;
+	background: var(--amber-tint);
+	border-radius: var(--r-sm);
+	color: var(--ink-2);
 }
 
 .prose table {
@@ -299,128 +949,24 @@ button,
 	text-align: left;
 }
 
-/* ---- Explore + project page (Phase 2) ------------------------------------ */
-
-.lede {
-	max-width: 46rem;
-	font-size: 1.05rem;
-}
-
-.filters {
-	display: grid;
-	gap: 0.75rem;
-	grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-	align-items: end;
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 1rem;
-	margin: 1.25rem 0 0.75rem;
-}
-
-.filters__field label {
-	font-size: 0.85rem;
-	font-weight: 550;
-	color: var(--muted);
-}
-
-.filters__field--search {
-	grid-column: 1 / -1;
-}
-
-.filters__clear {
-	align-self: end;
-	justify-self: start;
-}
-
-.results-count {
-	color: var(--muted);
-	font-size: 0.875rem;
-	margin: 0 0 1rem;
-}
-
-.empty {
-	color: var(--muted);
-	display: flex;
-	gap: 0.75rem;
-	align-items: center;
-	flex-wrap: wrap;
-	margin-top: 1.25rem;
-}
-
-.project-card {
-	display: flex;
-	flex-direction: column;
-	gap: 0.25rem;
-}
-
-.project-card__title {
-	font-size: 1.05rem;
-	margin: 0;
-}
-
-.project-card__title a {
-	color: var(--fg);
-	text-decoration: none;
-}
-
-.project-card__title a:hover {
-	color: var(--accent);
-	text-decoration: underline;
-}
-
-.project-card__date {
-	margin-top: auto;
-	padding-top: 0.5rem;
-}
-
-.breadcrumbs {
-	font-size: 0.875rem;
-	margin-bottom: 1.25rem;
-}
-
-.project__header {
-	border-bottom: 1px solid var(--line);
-	margin-bottom: 1.5rem;
-	padding-bottom: 1rem;
-}
-
-.project__meta {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.5rem 2rem;
-	margin: 0.75rem 0 0;
-}
-
-.project__meta dt {
-	font-size: 0.75rem;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
-	color: var(--muted);
-}
-
-.project__meta dd {
-	margin: 0.1rem 0 0;
-}
-
-.project__meta .tag-list {
-	margin: 0;
-}
-
-.project__source {
-	border-top: 1px solid var(--line);
-	margin-top: 2.5rem;
-	padding-top: 1rem;
+.prose th {
+	background: var(--blue-tint);
 }
 
 .prose--source {
-	background: #f6f6f4;
+	background: var(--ground-cool);
 	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 0.75rem;
+	border-radius: var(--r-sm);
+	padding: 0.85rem 1rem;
 	overflow-x: auto;
 	white-space: pre-wrap;
 	font-size: 0.85rem;
+}
+
+.error-page h1 {
+	font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+	font-weight: 400;
+	letter-spacing: -0.02em;
 }
 
 .error-page .button {
@@ -429,10 +975,40 @@ button,
 	display: inline-block;
 }
 
-/* --- admin: the sign-in page, the queue, the editor ----------------------------------------- */
+/* ---- submit form + receipt --------------------------------------------------- */
 
-/* Like the rest of this file this is not a design, it is legibility: the admin screens were built
-   before the visual pass (see TODO) and get the same tokens as the public pages meanwhile. */
+.submit-form {
+	max-width: 42rem;
+}
+
+.form-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 1rem;
+}
+
+.form-row .field {
+	flex: 1 1 14rem;
+}
+
+.receipt {
+	max-width: 42rem;
+	border: 1.5px solid var(--line-strong);
+	border-radius: var(--r-lg);
+	background: var(--surface);
+	padding: 1.5rem 1.75rem;
+}
+
+.receipt h1 {
+	font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	line-height: 1.08;
+}
+
+/* ---- admin: the sign-in page, the queue, the editor -------------------------- */
+/* The reviewer's screens wear the same world — cream paper, rounded panels,
+   pill tabs — and keep their working density. */
 
 .sr-only {
 	position: absolute;
@@ -457,15 +1033,20 @@ button,
 	align-items: center;
 	justify-content: space-between;
 	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
+	border: 1.5px solid var(--line-strong);
+	border-radius: var(--r-md);
 	padding: 0.6rem 0.9rem;
 	margin-bottom: 1.25rem;
 }
 
 .admin-bar__brand {
-	font-weight: 600;
+	font-family: var(--font-sans);
+	font-size: 0.9375rem;
+	font-weight: 800;
+	letter-spacing: 0;
+	text-transform: none;
 	text-decoration: none;
+	color: var(--ink);
 }
 
 .admin-bar__right {
@@ -486,17 +1067,32 @@ button,
 }
 
 .admin-tabs a {
+	font-family: var(--font-sans);
+	font-size: 0.8125rem;
+	font-weight: 750;
+	letter-spacing: 0;
+	text-transform: none;
 	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: 999px;
-	padding: 0.25rem 0.75rem;
+	border: 1.5px solid var(--ink-3);
+	border-radius: var(--r-pill);
+	padding: 0.28rem 0.85rem;
 	text-decoration: none;
+	color: var(--ink-2);
+	transition:
+		background 140ms var(--ease),
+		color 140ms var(--ease),
+		border-color 140ms var(--ease);
+}
+
+.admin-tabs a:hover {
+	color: var(--blue-deep);
+	border-color: var(--blue);
 }
 
 .admin-tabs a[aria-current='page'] {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: var(--accent-ink);
+	background: var(--blue);
+	border-color: var(--blue);
+	color: #ffffff;
 }
 
 .admin-queue-scroll {
@@ -518,16 +1114,25 @@ button,
 	border-bottom: 1px solid var(--line);
 }
 
+.admin-queue thead th {
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ink-3);
+}
+
 .admin-queue tbody th {
-	font-weight: 600;
+	font-weight: 750;
 	min-width: 16rem;
 }
 
 .admin-queue :is(.admin-queue__file, .admin-queue__email) {
 	display: block;
-	font-weight: 400;
+	font-weight: 450;
 	font-size: 0.82rem;
-	color: var(--muted);
+	color: var(--ink-2);
 	overflow-wrap: anywhere;
 }
 
@@ -551,16 +1156,20 @@ button,
 
 .admin-editor__who {
 	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
+	border: 1.5px solid var(--line-strong);
+	border-radius: var(--r-md);
 	padding: 0.9rem 1rem;
 	margin: 0;
 	font-size: 0.85rem;
 }
 
 .admin-editor__who dt {
-	font-weight: 600;
-	color: var(--muted);
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 800;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--blue-deep);
 	margin-top: 0.55rem;
 }
 
@@ -571,9 +1180,9 @@ button,
 
 .admin-form {
 	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 1rem;
+	border: 1.5px solid var(--line-strong);
+	border-radius: var(--r-md);
+	padding: 1.1rem 1.25rem;
 	margin-bottom: 1.5rem;
 }
 
@@ -602,8 +1211,9 @@ button,
 }
 
 .admin-preview {
-	border: 1px dashed var(--line);
-	border-radius: var(--radius);
+	border: 2px dashed #ddceac;
+	background: var(--surface);
+	border-radius: var(--r-md);
 	padding: 1rem 1.1rem;
 	margin-bottom: 1.5rem;
 }
@@ -621,222 +1231,21 @@ button,
 	display: flex;
 	gap: 0.5rem;
 	align-items: flex-start;
-	font-weight: 500;
+	font-weight: 700;
 }
 
 .field--check input {
 	width: auto;
-	margin-top: 0.2rem;
+	margin-top: 0.25rem;
 }
 
-.button--danger {
-	background: var(--danger);
-	border-color: var(--danger);
-	color: #fff;
-}
+/* ---- motion: one register, then quiet ---------------------------------------- */
 
-/* --- admin: the sign-in page, the queue, the editor ----------------------------------------- */
-
-/* Like the rest of this file this is not a design, it is legibility: the admin screens were built
-   before the visual pass (see TODO) and get the same tokens as the public pages meanwhile. */
-
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0 0 0 0);
-	white-space: nowrap;
-	border: 0;
-}
-
-.admin-signin {
-	max-width: 28rem;
-}
-
-.admin-bar {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--gap);
-	align-items: center;
-	justify-content: space-between;
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 0.6rem 0.9rem;
-	margin-bottom: 1.25rem;
-}
-
-.admin-bar__brand {
-	font-weight: 600;
-	text-decoration: none;
-}
-
-.admin-bar__right {
-	display: flex;
-	align-items: center;
-	gap: 0.9rem;
-}
-
-.admin-bar__right form {
-	margin: 0;
-}
-
-.admin-tabs {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.4rem;
-	margin-bottom: 1rem;
-}
-
-.admin-tabs a {
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: 999px;
-	padding: 0.25rem 0.75rem;
-	text-decoration: none;
-}
-
-.admin-tabs a[aria-current='page'] {
-	background: var(--accent);
-	border-color: var(--accent);
-	color: var(--accent-ink);
-}
-
-.admin-queue-scroll {
-	overflow-x: auto;
-}
-
-/* A queue row is wide on purpose: the reviewer decides from title + who sent it + how long it has
-   been waiting, and that is easier to read across than stacked. */
-.admin-queue {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.9rem;
-}
-
-.admin-queue :is(th, td) {
-	text-align: left;
-	vertical-align: top;
-	padding: 0.6rem 0.5rem;
-	border-bottom: 1px solid var(--line);
-}
-
-.admin-queue tbody th {
-	font-weight: 600;
-	min-width: 16rem;
-}
-
-.admin-queue :is(.admin-queue__file, .admin-queue__email) {
-	display: block;
-	font-weight: 400;
-	font-size: 0.82rem;
-	color: var(--muted);
-	overflow-wrap: anywhere;
-}
-
-.admin-queue__public {
-	display: inline-block;
-	margin-top: 0.3rem;
-	font-size: 0.85rem;
-}
-
-.admin-editor__header {
-	display: grid;
-	gap: 1rem;
-	margin-bottom: 1.5rem;
-}
-
-@media (min-width: 60rem) {
-	.admin-editor__header {
-		grid-template-columns: 2fr 1fr;
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
 	}
-}
-
-.admin-editor__who {
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 0.9rem 1rem;
-	margin: 0;
-	font-size: 0.85rem;
-}
-
-.admin-editor__who dt {
-	font-weight: 600;
-	color: var(--muted);
-	margin-top: 0.55rem;
-}
-
-.admin-editor__who dd {
-	margin: 0;
-	overflow-wrap: anywhere;
-}
-
-.admin-form {
-	background: var(--surface);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	padding: 1rem;
-	margin-bottom: 1.5rem;
-}
-
-.admin-form--row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-	align-items: flex-end;
-}
-
-.admin-form--row .field {
-	flex: 1 1 16rem;
-	margin-bottom: 0;
-}
-
-.admin-form__actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 0.6rem;
-}
-
-.admin-form__choice {
-	display: flex;
-	flex-direction: column;
-	gap: 0.2rem;
-}
-
-.admin-preview {
-	border: 1px dashed var(--line);
-	border-radius: var(--radius);
-	padding: 1rem 1.1rem;
-	margin-bottom: 1.5rem;
-}
-
-.admin-section {
-	margin-bottom: 1.75rem;
-}
-
-.admin-section--danger {
-	border-top: 1px solid var(--line);
-	padding-top: 1rem;
-}
-
-.field--check label {
-	display: flex;
-	gap: 0.5rem;
-	align-items: flex-start;
-	font-weight: 500;
-}
-
-.field--check input {
-	width: auto;
-	margin-top: 0.2rem;
-}
-
-.button--danger {
-	background: var(--danger);
-	border-color: var(--danger);
-	color: #fff;
 }

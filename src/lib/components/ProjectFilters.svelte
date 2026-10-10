@@ -85,8 +85,8 @@
 	{#if active}
 		<button type="button" class="button--quiet filters__clear" onclick={onreset}>Clear</button>
 	{/if}
-</section>
 
-<p class="results-count" role="status">
-	{resultCount} of {total} project{total === 1 ? '' : 's'}
-</p>
+	<p class="results-count" role="status">
+		{resultCount} of {total} project{total === 1 ? '' : 's'}
+	</p>
+</section>

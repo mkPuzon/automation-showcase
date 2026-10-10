@@ -12,6 +12,10 @@ bun.lockb
 /playwright-report/
 /test-results/
 
+# Skill tooling and design-review artifacts (not project code)
+.pi/
+.impeccable/
+
 # Python (api/) — virtualenv, caches, dev uploads
 api/.venv/
 __pycache__/

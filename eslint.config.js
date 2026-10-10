@@ -10,6 +10,11 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	{
+		// Skill tooling and design-review artifacts: not project code, and linting
+		// a vendored skill script only produces noise.
+		ignores: ['.pi/**', '.impeccable/**']
+	},
 	js.configs.recommended,
 	ts.configs.recommended,
 	svelte.configs.recommended,

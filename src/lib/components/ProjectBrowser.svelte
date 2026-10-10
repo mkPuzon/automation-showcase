@@ -43,8 +43,8 @@
 
 	{#if visible.length > 0}
 		<div class="card-grid">
-			{#each visible as project (project.id)}
-				<ProjectCard {project} />
+			{#each visible as project, i (project.id)}
+				<ProjectCard {project} number={i + 1} />
 			{/each}
 		</div>
 	{:else}
