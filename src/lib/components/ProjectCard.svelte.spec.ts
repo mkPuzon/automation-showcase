@@ -1,8 +1,8 @@
 /**
  * One card in the Explore grid.
  *
- * The card is the whole of Explore's information design: title, who, department, tools, date — and
- * nothing else. No body text, no contributor names, no email address. So these tests are about two
+ * The card is the whole of Explore's information design: a department tab, title, who, tools, date —
+ * and nothing else. No body text, no contributor names, no email address. So these tests are about two
  * things at once: that a reader can get from the grid into a write-up, and that the card does not
  * start showing what the design decided belongs on the project page.
  *
@@ -29,10 +29,13 @@ describe('ProjectCard', () => {
 		await expect.element(link).toHaveAttribute('href', `/projects/${rubric.slug}`);
 	});
 
-	it('is a byline of name and department, nothing more', async () => {
+	it('puts the author on the face and the department on the folder tab', async () => {
 		render(ProjectCard, { project: rubric });
 
-		await expect.element(page.getByText('Jessie Chen · Computational Science')).toBeInTheDocument();
+		await expect.element(page.getByText('Jessie Chen', { exact: true })).toBeInTheDocument();
+		await expect
+			.element(page.getByText('Computational Science', { exact: true }))
+			.toBeInTheDocument();
 	});
 
 	it('keeps contributor names off the card', async () => {

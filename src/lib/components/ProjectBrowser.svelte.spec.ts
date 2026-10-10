@@ -13,11 +13,13 @@ describe('ProjectBrowser', () => {
 		await expect
 			.element(page.getByRole('link', { name: 'Grading 120 Lab Reports with a Rubric Macro' }))
 			.toHaveAttribute('href', '/projects/grading-120-lab-reports-2026-10-01-aa01');
-		await expect
-			.element(page.getByText('Jessie Chen · Computational Science').first())
-			.toBeInTheDocument();
-		// scoped to the card: the same words also appear as <option>s in the filter bar
+		// scoped to the card: the same words also appear as <option>s in the filter bar, and the
+		// department also rides the folder tab of any card in the same department
 		const rubricCard = page.getByRole('article').filter({ hasText: 'Rubric Macro' });
+		await expect.element(rubricCard.getByText('Jessie Chen', { exact: true })).toBeInTheDocument();
+		await expect
+			.element(rubricCard.getByText('Computational Science', { exact: true }))
+			.toBeInTheDocument();
 		await expect.element(rubricCard.getByText('pandas', { exact: true })).toBeInTheDocument();
 		await expect.element(rubricCard.getByText('Google Docs', { exact: true })).toBeInTheDocument();
 		await expect.element(page.getByText('Oct 1, 2026').first()).toBeInTheDocument();

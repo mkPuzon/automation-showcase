@@ -170,6 +170,8 @@ test.describe('a write-up from submission to Explore', () => {
 
 		await signIn(page);
 		await page.goto(`/admin/dashboard/${projectId}`);
+		// Delete lives behind one honest click, not a full-width section.
+		await page.locator('.admin-delete summary').click();
 		await page.locator('input[name="confirm"]').check();
 		await page.getByRole('button', { name: 'Delete this write-up' }).click();
 		await expect(page.locator('.notice').filter({ hasText: TITLE })).toBeVisible();

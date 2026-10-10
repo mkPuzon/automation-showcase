@@ -62,8 +62,10 @@ submit.
 - **Deliberately independent** of Colby College's official visual identity — no institutional logo
   or typeface obligations. Brand color authority is now the **DAI mark's triad** (royal blue / amber
   / green families, sampled from `dai_logo.png`, adopted Oct 2026 in place of the earlier
-  Colby-blue-only commitment): blue acts, amber highlights, green confirms. The project card grid
-  deliberately keeps its earlier printed-plate look as the register of real work.
+  Colby-blue-only commitment): blue acts, amber highlights, green confirms. The project card grid wears the same world — warm
+  paper faces, rounded corners, triad-tinted tool chips — while keeping its Archivo titles and
+  mono chips/dates as the register of real work (rethemed Oct 2026 from the earlier
+  printed-plate look).
 - **Voice:** collegial, peer-to-peer, practical — colleagues sharing with colleagues, not
   institutional announcements.
 

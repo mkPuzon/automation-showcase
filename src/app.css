@@ -6,17 +6,14 @@
    yellow / orange, green / kelly / lime), chunky rounded type (Nunito), pill
    buttons and chips, rounded panels, hard-stop triad stripes, and a scalloped
    reviewed sticker. Playful, but grown-up: flat color, no gradients-for-depth,
-   no emoji.
-
-   One deliberate holdout: the project card grid keeps the printed plate look
-   it had — square near-white faces, hairline rules, mono registration layer.
-   Its styles are pinned to literal values below (search "FROZEN").
+   no emoji. The project card shelf speaks the same language: warm paper faces,
+   rounded corners, triad-tinted tool chips, a settle-in and a lift.
 
    Type is self-hosted (CSP is font-src 'self'; nothing loads from third
    parties) in three voices: Archivo for headings (display, headlines, card
    titles — the register of real work), Nunito for body and UI (the rounded,
-   friendly voice), and IBM Plex Mono for code and the cards' registration
-   layer. All OFL; woff2 in /static/fonts.
+   friendly voice), and IBM Plex Mono for code, the cards' chips and dates.
+   All OFL; woff2 in /static/fonts.
 --------------------------------------------------------------------------- */
 
 @font-face {
@@ -313,6 +310,11 @@ main {
 main.container {
 	padding-top: 2.75rem;
 	padding-bottom: 4.5rem;
+}
+
+/* the reviewer's screens carry their own bar; it sits flush against the top */
+main:has(.admin-bar) {
+	padding-top: 1.25rem;
 }
 
 .site-footer {
@@ -666,26 +668,16 @@ main.container {
 	white-space: nowrap;
 }
 
-/* ---- the plate grid — FROZEN ----------------------------------------------
-   The project card shelf keeps its printed plate-section look: square
-   near-white faces, hairline rules, mono registration numbers, tags and
-   dates, and the registration crosshair. These styles are pinned to literal
-   values on purpose — the playful world surrounds the shelf, it does not
-   repaint it. Do not retheme this section. */
+/* ---- the project card grid -------------------------------------------------
+   Each card is a folder from the craft cabinet: a triad-tinted tab carries the
+   department above a warm paper face. Archivo titles, Nunito bylines, mono
+   chips and dates — the voices the shelf has always had. */
 
 .card-grid {
 	margin-top: 2.25rem;
 	display: grid;
-	border: 1px solid #c9c7c4;
+	gap: 1.25rem;
 	grid-template-columns: 1fr;
-}
-
-/* Cards carry their own hairline and overlap their neighbour's by 1px, so full
-   rows read as one registered sheet while an incomplete last row simply ends —
-   no painted ground showing through empty tracks. */
-.card-grid > * {
-	border: 1px solid #c9c7c4;
-	margin: 0 -1px -1px 0;
 }
 
 @media (min-width: 42rem) {
@@ -701,12 +693,12 @@ main.container {
 }
 
 .card {
-	background: #fbfafc;
-	border: 1px solid #c9c7c4;
-	border-radius: 0;
-	padding: 1.5rem 1.5rem 1.25rem;
-	/* the shelf's prose voice is Archivo, as printed — the playful world's Nunito
-	   stays outside the frame */
+	background: var(--surface);
+	border: 1.5px solid var(--line);
+	border-radius: var(--r-lg);
+	padding: 1.5rem;
+	/* the shelf's prose voice is Archivo, as it has always been — Nunito carries
+	   the byline underneath it */
 	font-family: var(--font-display);
 }
 
@@ -714,59 +706,113 @@ main.container {
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 0.25rem;
+	/* the folder: the article itself is a transparent mount — the tab and the
+	   face carry the paper, the border, and the padding */
+	gap: 0;
+	padding: 0;
+	background: transparent;
+	border: none;
+	/* the hover tilt pivots around the folder's bottom-left corner, as if a
+	   thumb hooked there to flip through it */
+	transform-origin: 18% 100%;
 	transition:
-		transform 160ms var(--ease),
-		box-shadow 160ms var(--ease);
+		transform 180ms var(--ease),
+		box-shadow 180ms var(--ease),
+		border-color 180ms var(--ease);
 }
 
-/* the registration crosshair, top-left of every plate */
-.project-card::before {
-	content: '';
-	position: absolute;
-	top: -6px;
-	left: -6px;
-	width: 12px;
-	height: 12px;
-	background:
-		linear-gradient(#16181a, #16181a) center / 1px 12px no-repeat,
-		linear-gradient(#16181a, #16181a) center / 12px 1px no-repeat;
-	opacity: 0.55;
-	pointer-events: none;
+/* the department tab: a triad-tinted folder tab tucked behind the face's top
+   edge, speaking the shelf's mono registration voice */
+.folder-tab {
+	position: relative;
+	z-index: 0;
+	width: fit-content;
+	max-width: 88%;
+	margin: 0 0 -1.5px 1.1rem;
+	padding: 0.42rem 0.95rem 0.5rem;
+	background: var(--blue-tint);
+	color: var(--blue-deep);
+	border: 1.5px solid var(--line);
+	border-bottom: none;
+	border-radius: var(--r-sm) var(--r-sm) 0 0;
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	transition: transform 180ms var(--ease);
 }
 
-/* focus answers in one register across the shelf: the plate lifts, the rest
+.folder-face {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	background: var(--surface);
+	border: 1.5px solid var(--line);
+	border-radius: var(--r-lg);
+	padding: 1.35rem 1.5rem 1.5rem;
+}
+
+/* a freshly dealt shelf settles in card by card; cards that survive a filter
+   change keep their node, so only the new arrivals re-settle */
+@media (prefers-reduced-motion: no-preference) {
+	.project-card {
+		animation: card-settle 420ms var(--ease) backwards;
+		animation-delay: calc(min(var(--card-i, 0), 10) * 45ms);
+	}
+}
+
+@keyframes card-settle {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* focus answers in one register across the shelf: the card lifts, the rest
    of the grid stays exactly where it is */
+/* browsing a folder: it is plucked and tipped around its corner — movement
+   only where motion is welcome, while the face's edge warming stays on as the
+   quiet always-on response */
 @media (hover: hover) {
 	.card-grid .project-card:hover {
-		transform: translateY(-4px);
 		z-index: 1;
-		box-shadow:
-			0 14px 28px rgba(22, 24, 26, 0.09),
-			0 2px 6px rgba(22, 24, 26, 0.07);
+	}
+
+	.card-grid .project-card:hover .folder-face {
+		border-color: #ddceac;
+	}
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+	.card-grid .project-card:hover {
+		transform: rotate(-1deg) scale(1.012);
 	}
 }
 
 .card-grid .project-card:focus-within {
-	transform: translateY(-4px);
 	z-index: 1;
-	box-shadow:
-		0 14px 28px rgba(22, 24, 26, 0.09),
-		0 2px 6px rgba(22, 24, 26, 0.07);
 }
 
-.project-card__no {
-	font-family: var(--font-mono);
-	font-size: 0.6563rem;
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: #6b6963;
-	margin: 0 0 0.45rem;
+.card-grid .project-card:focus-within .folder-face {
+	border-color: #ddceac;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.card-grid .project-card:focus-within {
+		transform: rotate(-1deg) scale(1.012);
+	}
 }
 
 .project-card__title {
-	font-size: 1.1875rem;
-	font-weight: 500;
+	font-size: 1.3125rem;
+	font-weight: 600;
 	letter-spacing: -0.01em;
 	line-height: 1.25;
 	margin: 0;
@@ -774,7 +820,7 @@ main.container {
 }
 
 .project-card__title a {
-	color: #16181a;
+	color: var(--ink);
 	text-decoration: none;
 	transition: color 140ms var(--ease);
 	/* a title link is the card's primary tap target: widen the hit area to ~44px
@@ -791,14 +837,14 @@ main.container {
 }
 
 .project-card .meta {
-	color: #4c4a46;
+	color: var(--ink-2);
 	font-size: 0.875rem;
 	margin: 0.35rem 0 0;
 }
 
 .project-card .meta b {
 	font-weight: 550;
-	color: #16181a;
+	color: var(--ink);
 }
 
 .tag-list {
@@ -815,8 +861,10 @@ main.container {
 	padding-top: 1.1rem;
 }
 
-/* the mono registration chip — frozen with the card shelf, used there and on
-   the project page's "Uses" row */
+/* the tool chip: mono uppercase, as always, now cut from pale triad paper —
+   the rotation runs blue / amber / green down each card's list, the same
+   rhythm as the logo's three dots. (The base .tag stays hairline for the
+   project page's "Uses" row.) */
 .tag {
 	font-family: var(--font-mono);
 	font-size: 0.6563rem;
@@ -828,6 +876,27 @@ main.container {
 	padding: 0.15rem 0.5rem;
 }
 
+.project-card .tag {
+	border: none;
+	border-radius: var(--r-pill);
+	padding: 0.24rem 0.65rem;
+}
+
+.project-card .tag:nth-child(3n + 1) {
+	background: var(--blue-tint);
+	color: var(--blue-deep);
+}
+
+.project-card .tag:nth-child(3n + 2) {
+	background: var(--amber-tint);
+	color: var(--pending-ink);
+}
+
+.project-card .tag:nth-child(3n) {
+	background: var(--green-tint);
+	color: var(--published-ink);
+}
+
 .project-card .project-card__date {
 	margin-top: 0.55rem;
 	padding-top: 0;
@@ -835,7 +904,7 @@ main.container {
 	font-size: 0.6563rem;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: #6b6963;
+	color: var(--ink-3);
 }
 
 .meta {
@@ -876,6 +945,12 @@ main.container {
 .notice--warning {
 	border-color: var(--amber);
 	background: var(--amber-tint);
+}
+
+/* the queue confirming a destructive write went through */
+.notice--good {
+	border-color: var(--published-line);
+	background: var(--green-tint);
 }
 
 /* ---- status vocabulary: pending | published | rejected --------------------- */
@@ -1216,8 +1291,8 @@ button:active,
 }
 
 /* ---- admin: the sign-in page, the queue, the editor -------------------------- */
-/* The reviewer's screens wear the same world — cream paper, rounded panels,
-   pill tabs — and keep their working density. */
+/* The reviewer's screens are a workplace: one slim sticky bar instead of the public
+   header and footer, calm paper cards, and the decision always within reach. */
 
 .sr-only {
 	position: absolute;
@@ -1231,60 +1306,116 @@ button:active,
 	border: 0;
 }
 
-.admin-signin {
-	max-width: 28rem;
-}
-
+/* the shell bar: sticky, cream, the world's hairline and a soft stop beneath it */
 .admin-bar {
+	position: sticky;
+	top: 0;
+	z-index: 20;
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--gap);
 	align-items: center;
 	justify-content: space-between;
-	background: var(--surface);
-	border: 1.5px solid var(--line-strong);
-	border-radius: var(--r-md);
-	padding: 0.6rem 0.9rem;
-	margin-bottom: 1.25rem;
+	gap: 0.5rem 1rem;
+	background: var(--ground);
+	border-bottom: 1.5px solid var(--line);
+	box-shadow: 0 12px 24px -20px rgba(38, 33, 23, 0.55);
+	margin: -1.25rem -1.25rem 1.75rem;
+	padding: 0.6rem 1.25rem;
 }
 
 .admin-bar__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.55rem;
 	font-family: var(--font-sans);
 	font-size: 0.9375rem;
 	font-weight: 800;
-	letter-spacing: 0;
-	text-transform: none;
-	text-decoration: none;
+	letter-spacing: -0.005em;
 	color: var(--ink);
+	text-decoration: none;
+}
+
+.admin-bar__brand svg {
+	display: block;
 }
 
 .admin-bar__right {
 	display: flex;
 	align-items: center;
-	gap: 0.9rem;
+	gap: 0.35rem;
 }
 
 .admin-bar__right form {
 	margin: 0;
 }
 
+.admin-bar__right a {
+	font-family: var(--font-sans);
+	font-size: 0.8125rem;
+	font-weight: 750;
+	color: var(--ink-2);
+	text-decoration: none;
+	padding: 0.35rem 0.9rem;
+	border-radius: var(--r-pill);
+	transition:
+		color 140ms var(--ease),
+		background 140ms var(--ease);
+}
+
+.admin-bar__right a:hover {
+	color: var(--ink);
+	background: #f6ecd8;
+}
+
+/* the queue head: the name and the count on one line */
+.admin-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.35rem 1.25rem;
+	margin-bottom: 1.1rem;
+}
+
+.admin-head h1 {
+	font-size: 1.625rem;
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	margin: 0;
+}
+
+.admin-head .results-count {
+	margin: 0;
+	padding: 0;
+}
+
+/* tabs and search share a row, and wrap apart on a phone */
+.admin-controls {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1.5rem;
+	margin-bottom: 1rem;
+}
+
 .admin-tabs {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.4rem;
-	margin-bottom: 1rem;
 }
 
 .admin-tabs a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
 	font-family: var(--font-sans);
 	font-size: 0.8125rem;
 	font-weight: 750;
 	letter-spacing: 0;
-	text-transform: none;
 	background: var(--surface);
 	border: 1.5px solid var(--ink-3);
 	border-radius: var(--r-pill);
-	padding: 0.28rem 0.85rem;
+	padding: 0.28rem 0.5rem 0.28rem 0.85rem;
 	text-decoration: none;
 	color: var(--ink-2);
 	transition:
@@ -1304,107 +1435,418 @@ button:active,
 	color: #ffffff;
 }
 
-.admin-queue-scroll {
-	overflow-x: auto;
-}
-
-/* A queue row is wide on purpose: the reviewer decides from title + who sent it + how long it has
-   been waiting, and that is easier to read across than stacked. */
-.admin-queue {
-	width: 100%;
-	border-collapse: collapse;
-	font-size: 0.9rem;
-}
-
-.admin-queue :is(th, td) {
-	text-align: left;
-	vertical-align: top;
-	padding: 0.6rem 0.5rem;
-	border-bottom: 1px solid var(--line);
-}
-
-.admin-queue thead th {
-	font-family: var(--font-sans);
-	font-size: 0.6875rem;
+.admin-tabs__count {
 	font-weight: 800;
-	letter-spacing: 0.08em;
+	font-size: 0.75rem;
+	background: var(--ground-cool);
+	color: var(--ink-2);
+	border-radius: var(--r-pill);
+	padding: 0.05rem 0.5rem;
+}
+
+.admin-tabs a[aria-current='page'] .admin-tabs__count {
+	background: rgba(255, 255, 255, 0.24);
+	color: #ffffff;
+}
+
+.admin-search {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex: 1 1 15rem;
+	max-width: 22rem;
+	min-width: 13rem;
+}
+
+.admin-search input {
+	flex: 1;
+	width: auto;
+}
+
+/* the queue: one link per write-up, one meta line, and the clock on the right */
+.admin-rows {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	border-top: 1px solid var(--line);
+}
+
+.admin-row {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.5rem 1.5rem;
+	padding: 0.75rem;
+	margin: 0 -0.75rem;
+	border-bottom: 1px solid var(--line);
+	border-radius: var(--r-sm);
+	transition: background 140ms var(--ease);
+}
+
+.admin-row:hover {
+	background: var(--surface);
+}
+
+.admin-row__main {
+	min-width: 0;
+}
+
+.admin-row__titleline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.3rem 0.6rem;
+	margin: 0;
+}
+
+.admin-row__link {
+	font-family: var(--font-display);
+	font-size: 1.0625rem;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	line-height: 1.3;
+	color: var(--ink);
+	text-decoration: none;
+	/* the row's tap target, widened without moving the visual box */
+	padding: 0.3rem 0.5rem;
+	margin: -0.3rem -0.5rem;
+}
+
+.admin-row__link:hover {
+	color: var(--blue);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+}
+
+.admin-row__meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.1rem 0.55rem;
+	margin: 0.3rem 0 0;
+	font-size: 0.85rem;
+	color: var(--ink-2);
+}
+
+.admin-row__who {
+	color: var(--ink);
+	font-weight: 600;
+}
+
+.admin-row__side {
+	flex: none;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 0.12rem;
+	text-align: right;
+}
+
+.admin-row__date {
+	font-family: var(--font-mono);
+	font-size: 0.71875rem;
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	color: var(--ink-3);
 }
 
-.admin-queue tbody th {
+.admin-row__wait {
+	font-size: 0.8125rem;
 	font-weight: 750;
-	min-width: 16rem;
+	color: var(--pending-ink);
 }
 
-.admin-queue :is(.admin-queue__file, .admin-queue__email) {
-	display: block;
-	font-weight: 450;
-	font-size: 0.82rem;
-	color: var(--ink-2);
-	overflow-wrap: anywhere;
-}
-
-.admin-queue__public {
-	display: inline-block;
-	margin-top: 0.3rem;
+.admin-row__live {
 	font-size: 0.85rem;
 }
 
-.admin-editor__header {
-	display: grid;
-	gap: 1rem;
-	margin-bottom: 1.5rem;
+.admin-row__file {
+	font-family: var(--font-mono);
+	font-size: 0.71875rem;
+	color: var(--ink-3);
+	max-width: 15rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-@media (min-width: 60rem) {
-	.admin-editor__header {
-		grid-template-columns: 2fr 1fr;
+@media (max-width: 40rem) {
+	.admin-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.admin-row__side {
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: flex-start;
+		gap: 0.15rem 0.9rem;
+		text-align: left;
+	}
+
+	.admin-row__file {
+		max-width: none;
 	}
 }
 
-.admin-editor__who {
-	background: var(--surface);
-	border: 1.5px solid var(--line-strong);
-	border-radius: var(--r-md);
-	padding: 0.9rem 1rem;
+/* the editor: the write-up on the left, every decision on the right.
+   Below 64rem the rail folds into the column, decision first — reading and
+   deciding is the job; typing is the exception. */
+.admin-editor {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.admin-rail {
+	display: contents;
+}
+
+.admin-editor__head {
+	order: 0;
+}
+
+.admin-card--decide {
+	order: 1;
+}
+
+.admin-editor__main {
+	order: 2;
+	min-width: 0;
+}
+
+.admin-card--facts {
+	order: 3;
+}
+
+.admin-card--address {
+	order: 4;
+}
+
+.admin-delete {
+	order: 5;
+}
+
+@media (min-width: 64rem) {
+	.admin-editor {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 21.5rem;
+		grid-template-areas:
+			'head head'
+			'main rail';
+		gap: 1.25rem 2.25rem;
+		align-items: start;
+	}
+
+	.admin-editor__head {
+		grid-area: head;
+	}
+
+	.admin-editor__main {
+		grid-area: main;
+	}
+
+	.admin-rail {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		grid-area: rail;
+		position: sticky;
+		top: 4.5rem;
+		max-height: calc(100vh - 5.5rem);
+		overflow-y: auto;
+		/* keep focus rings from being clipped by the scroll box */
+		padding: 2px;
+		margin: -2px;
+	}
+}
+
+.admin-editor__back {
+	display: flex;
+	align-items: baseline;
+	gap: 0.7rem;
+	margin: 0 0 0.6rem;
+}
+
+.admin-editor__back a {
+	font-size: 0.875rem;
+	font-weight: 750;
+	color: var(--ink-2);
+	text-decoration: none;
+	padding: 0.25rem 0.8rem;
+	margin-left: -0.8rem;
+	border-radius: var(--r-pill);
+	transition:
+		color 140ms var(--ease),
+		background 140ms var(--ease);
+}
+
+.admin-editor__back a:hover {
+	color: var(--blue-deep);
+	background: var(--blue-tint);
+}
+
+.admin-editor__num {
+	font-family: var(--font-mono);
+	font-size: 0.8125rem;
+	color: var(--ink-3);
+}
+
+.admin-editor__head h1 {
+	font-size: clamp(1.5rem, 2.6vw, 2.125rem);
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	line-height: 1.08;
+	margin: 0 0 0.6rem;
+}
+
+.admin-editor__state {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.9rem;
 	margin: 0;
+}
+
+.admin-card {
+	background: var(--surface);
+	border: 1.5px solid var(--line);
+	border-radius: var(--r-md);
+	padding: 1.1rem 1.25rem;
+}
+
+.admin-card h2 {
+	font-size: 1.0625rem;
+	margin-bottom: 0.65rem;
+}
+
+.admin-card .notice {
+	margin-bottom: 0.65rem;
+}
+
+/* decide: the three states, in the order a reviewer reaches for them */
+.admin-decide {
+	display: flex;
+	flex-direction: column;
+	gap: 0.55rem;
+}
+
+.admin-decide__choice {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.admin-decide__choice button {
+	width: 100%;
+}
+
+.admin-decide__choice .hint {
+	margin: 0 0 0.1rem 0.3rem;
+}
+
+.admin-facts {
+	margin: 0;
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 0.35rem 0.9rem;
 	font-size: 0.85rem;
 }
 
-.admin-editor__who dt {
-	font-family: var(--font-sans);
-	font-size: 0.6875rem;
-	font-weight: 800;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--blue-deep);
-	margin-top: 0.55rem;
+.admin-facts dt {
+	font-weight: 700;
+	color: var(--ink-3);
+	white-space: nowrap;
 }
 
-.admin-editor__who dd {
+.admin-facts dd {
 	margin: 0;
 	overflow-wrap: anywhere;
 }
 
-.admin-form {
+/* delete: behind one honest click, not a full-width section */
+.admin-delete {
 	background: var(--surface);
-	border: 1.5px solid var(--line-strong);
+	border: 1.5px solid var(--line);
 	border-radius: var(--r-md);
-	padding: 1.1rem 1.25rem;
-	margin-bottom: 1.5rem;
 }
 
-.admin-form--row {
+.admin-delete[open] {
+	border-color: var(--danger-line);
+}
+
+.admin-delete summary {
+	cursor: pointer;
+	list-style: none;
 	display: flex;
-	flex-wrap: wrap;
-	gap: 0.75rem;
-	align-items: flex-end;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding: 0.7rem 1rem;
+	font-size: 0.875rem;
+	font-weight: 800;
+	color: var(--danger);
+	border-radius: inherit;
+	transition: background 140ms var(--ease);
 }
 
-.admin-form--row .field {
-	flex: 1 1 16rem;
-	margin-bottom: 0;
+.admin-delete summary:hover {
+	background: #fdf6ea;
+}
+
+.admin-delete summary::-webkit-details-marker {
+	display: none;
+}
+
+.admin-delete summary::after {
+	content: '';
+	width: 7px;
+	height: 7px;
+	flex: none;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(45deg);
+	translate: 0 -2px;
+	transition: rotate 160ms var(--ease);
+}
+
+.admin-delete[open] summary::after {
+	rotate: -135deg;
+	translate: 0 2px;
+}
+
+.admin-delete__body {
+	border-top: 1px solid var(--line);
+	padding: 0.9rem 1rem 1rem;
+}
+
+/* the write-up form: metadata in one row where there is room */
+.admin-meta-grid {
+	display: grid;
+	gap: 0 1rem;
+}
+
+@media (min-width: 48rem) {
+	.admin-meta-grid {
+		grid-template-columns: repeat(3, 1fr);
+	}
+}
+
+.admin-form {
+	margin-bottom: 1.25rem;
+}
+
+.admin-form textarea {
+	resize: vertical;
+}
+
+/* the write-up is the one place mono is the working voice: it is Markdown source */
+#body_markdown {
+	font-family: var(--font-mono);
+	font-size: 0.85rem;
+	line-height: 1.6;
+	min-height: 24rem;
 }
 
 .admin-form__actions {
@@ -1413,27 +1855,12 @@ button:active,
 	gap: 0.6rem;
 }
 
-.admin-form__choice {
-	display: flex;
-	flex-direction: column;
-	gap: 0.2rem;
-}
-
 .admin-preview {
 	border: 2px dashed #ddceac;
 	background: var(--surface);
 	border-radius: var(--r-md);
 	padding: 1rem 1.1rem;
 	margin-bottom: 1.5rem;
-}
-
-.admin-section {
-	margin-bottom: 1.75rem;
-}
-
-.admin-section--danger {
-	border-top: 1px solid var(--line);
-	padding-top: 1rem;
 }
 
 .field--check label {
@@ -1446,6 +1873,20 @@ button:active,
 .field--check input {
 	width: auto;
 	margin-top: 0.25rem;
+}
+
+/* the sign-in page: alone on the cream, with the mark for company */
+.admin-signin {
+	max-width: 26rem;
+	background: var(--surface);
+	border: 1.5px solid var(--line);
+	border-radius: var(--r-lg);
+	padding: 1.75rem;
+	margin-top: 2.5rem;
+}
+
+.admin-signin__mark {
+	margin: 0 0 0.9rem;
 }
 
 /* ---- motion: one register, then quiet ---------------------------------------- */

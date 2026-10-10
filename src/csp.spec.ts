@@ -25,6 +25,9 @@ describe('content security policy', () => {
 		// .docx cannot have one. 'unsafe-inline'/'unsafe-eval' would undo that permanently, and neither
 		// has ever been needed here — Svelte compiles handlers to addEventListener, not to attributes.
 		expect(prod['script-src']).toEqual(['self']);
+		// Dev only: the impeccable live-mode design helper's overlay script, by explicit
+		// user-approved widening (see the loosenings list in csp.ts).
+		expect(dev['script-src']).toEqual(['self', 'http://localhost:8400']);
 		expect(prod['script-src-elem']).toBeUndefined();
 		expect(prod['script-src-attr']).toBeUndefined();
 	});
@@ -57,7 +60,7 @@ describe('content security policy', () => {
 		// fetch that can read a page and POST it elsewhere is another. Production is same-origin only —
 		// which is all SvelteKit needs — and the only widening is dev's hot-reload socket.
 		expect(prod['connect-src']).toEqual(['self']);
-		expect(dev['connect-src']).toEqual(['self', 'ws:']);
+		expect(dev['connect-src']).toEqual(['self', 'ws:', 'http://localhost:8400']);
 		expect(prod['form-action']).toEqual(['self']);
 	});
 
@@ -79,10 +82,10 @@ describe('content security policy', () => {
 		// hash every inline <style> it emits, which would change on each build.
 	});
 
-	it('says what it means in both modes, and the only difference is the dev socket', () => {
+	it('says what it means in both modes, and the only dev differences are the socket and the live-mode helper', () => {
 		expect(Object.keys(prod).sort()).toEqual(Object.keys(dev).sort());
 		for (const directive of Object.keys(prod)) {
-			if (directive === 'connect-src') continue;
+			if (directive === 'connect-src' || directive === 'script-src') continue;
 			expect(dev[directive as keyof typeof dev], directive).toEqual(
 				prod[directive as keyof typeof prod]
 			);

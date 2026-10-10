@@ -23,6 +23,9 @@
  * - `img-src data:` — Vite inlines small assets (the favicon) as data URIs at build time.
  * - `connect-src ws:` in development only, for Vite's hot-reload socket. Production is `'self'`,
  *   which is all SvelteKit needs (it fetches its own data endpoints) and nothing else.
+ * - `script-src`/`connect-src` `http://localhost:8400` in development only, for the impeccable
+ *   live-mode design helper (a localhost overlay tool driven from `.impeccable/`). Production
+ *   never sees it: production stays `'self'` everywhere.
  */
 
 import type { Config } from '@sveltejs/kit/vite';
@@ -41,11 +44,13 @@ export function cspDirectives({ dev = false }: { dev?: boolean } = {}): CspDirec
 	return {
 		'default-src': ['self'],
 		// Kit appends `'nonce-…'` per response for the scripts it inlines; nothing else can execute.
-		'script-src': ['self'],
+		// Dev-only widening: the impeccable live-mode design helper loads its overlay script from
+		// localhost:8400. Never present in production.
+		'script-src': dev ? ['self', 'http://localhost:8400'] : ['self'],
 		'style-src': ['self', 'unsafe-inline'],
 		'img-src': ['self', 'data:'],
 		'font-src': ['self'],
-		'connect-src': dev ? ['self', 'ws:'] : ['self'],
+		'connect-src': dev ? ['self', 'ws:', 'http://localhost:8400'] : ['self'],
 		// No plugins, no frames, no `<base>` swap, and no site of ours inside someone else's frame.
 		'object-src': ['none'],
 		'frame-src': ['none'],

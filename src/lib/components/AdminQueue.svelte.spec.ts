@@ -1,9 +1,10 @@
 /**
- * The queue table.
+ * The review queue's rows.
  *
- * Small file, but it is the one screen an admin looks at first, and two of its behaviours are the
+ * Small file, but it is the one screen an admin looks at first, and three of its behaviours are the
  * reason it exists at all: the submitter's email has to be reachable (that is the only place the API
- * exposes it), and the row has to say whether the write-up is already public.
+ * exposes it), the row has to say whether the write-up is already public, and a pending row has to
+ * say how long it has been waiting — the queue's whole clock.
  *
  * Run: npx vitest run src/lib/components/AdminQueue.svelte.spec.ts
  */
@@ -22,7 +23,7 @@ function row(over: Partial<AdminProjectSummary> = {}): AdminProjectSummary {
 		technologies: ['Python'],
 		contributors: [],
 		status: 'pending',
-		created_at: '2026-02-02T04:00:00Z',
+		created_at: new Date(Date.now() - 3 * 86_400_000).toISOString(),
 		updated_at: '2026-02-02T04:00:00Z',
 		submitter: {
 			id: 7,
@@ -45,9 +46,9 @@ describe('AdminQueue', () => {
 			projects: [row(), row({ id: 43, title: 'Library Signage Map', slug: 'library-signage-map' })]
 		});
 
-		expect(container.querySelectorAll('tbody tr').length).toBe(2);
-		const hrefs = [...container.querySelectorAll<HTMLAnchorElement>('tbody a')].map((link) =>
-			link.getAttribute('href')
+		expect(container.querySelectorAll('.admin-row').length).toBe(2);
+		const hrefs = [...container.querySelectorAll<HTMLAnchorElement>('.admin-row__link')].map(
+			(link) => link.getAttribute('href')
 		);
 		expect(hrefs).toContain('/admin/dashboard/42');
 		expect(hrefs).toContain('/admin/dashboard/43');
@@ -75,6 +76,12 @@ describe('AdminQueue', () => {
 		expect(container.querySelector('.status--published')).not.toBeNull();
 	});
 
+	it('tells a reviewer how long a pending write-up has been waiting', () => {
+		const { container } = render(AdminQueue, { projects: [row()] });
+
+		expect(text(container)).toMatch(/waiting 3 days/);
+	});
+
 	it('links out to the public page only where one exists', () => {
 		const { container } = render(AdminQueue, {
 			projects: [row(), row({ id: 46, status: 'published' })]
@@ -93,6 +100,13 @@ describe('AdminQueue', () => {
 
 		const empty = render(AdminQueue, { projects: [] });
 		expect(text(empty.container)).toContain('Nothing here.');
-		expect(empty.container.querySelector('table')).toBeNull();
+		expect(empty.container.querySelector('.admin-row')).toBeNull();
+	});
+
+	it('says when a search found nothing, and offers the way back', () => {
+		const { container } = render(AdminQueue, { projects: [], q: 'rubric' });
+
+		expect(text(container)).toContain('Nothing matches');
+		expect(container.querySelector<HTMLAnchorElement>('a[href="?status=all"]')).not.toBeNull();
 	});
 });

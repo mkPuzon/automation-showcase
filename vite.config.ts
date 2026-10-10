@@ -7,6 +7,14 @@ import { cspDirectives } from './src/csp.ts';
 export default defineConfig(({ command }) => ({
 	plugins: [
 		sveltekit({
+			// The impeccable live-mode dev helper (a dev-only overlay injected into
+			// +layout.svelte) still imports via the classic `$lib` specifier; SvelteKit 3
+			// removed that alias by default, so restore it here. Dev tooling only.
+			alias: {
+				$lib: 'src/lib',
+				'$lib/*': 'src/lib/*'
+			},
+
 			compilerOptions: {
 				// Force runes mode for the project, except for libraries. Can be removed in svelte 6.
 				runes: ({ filename }) =>

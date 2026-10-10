@@ -78,7 +78,6 @@ rounded:
   md: '14px'
   lg: '20px'
   pill: '999px'
-  card-frozen: '0'
 spacing:
   gap: '1rem'
 components:
@@ -91,10 +90,10 @@ components:
     textColor: '{colors.ink}'
     rounded: '{rounded.pill}'
     padding: '0.5rem 1.25rem'
-  card-plate:
-    backgroundColor: '#fbfafc'
-    textColor: '#16181a'
-    rounded: '{rounded.card-frozen}'
+  card-project:
+    backgroundColor: '{colors.surface}'
+    textColor: '{colors.ink}'
+    rounded: '{rounded.lg}'
     padding: '1.5rem'
 ---
 
@@ -107,17 +106,19 @@ colleagues show their makes: warm cream paper, cut-paper color from the DAI mark
 and stickers — flat color throughout, nothing glossy. Archivo speaks the headings (the register
 of real work); rounded Nunito carries the body and UI.
 
-One deliberate holdout: **the project card grid keeps its printed plate-section look** — square
-near-white faces, hairline rules, mono registration layer. The playful world surrounds the shelf;
-it does not repaint it (see The Frozen Shelf Rule).
+**Colleagues' shelf: the project card grid.** Warm surface-paper faces on the cream ground,
+20px rounded corners, `--line` borders, Archivo 500 titles, Nunito bylines, and mono tool chips
+cut from pale triad paper — blue / amber / green rotating down each card's list, the rhythm of
+the logo's three dots. A card settles in on arrival (420ms, staggered 45ms per card, capped at 10) and lifts 3px with a warm shadow on hover or focus-within. Cards are the register of real
+work — title, who, tools, date, and nothing else.
 
 **Key Characteristics:**
 
 - Cream paper ground; the DAI triad (blue / amber / green families) does real jobs
-- Archivo headings; Nunito body and UI; IBM Plex Mono only for code and the frozen cards
+- Archivo headings; Nunito body and UI; IBM Plex Mono for code, the cards' chips and dates
 - Pill buttons and chips, rounded panels (10–20px), 3px hard-stop triad stripe under header and atop footer
 - Hand-drawn amber squiggle under the Explore page name, the drifting mark loose above it, and the reviewed seal rocked into the footer's bottom right
-- The card shelf stays printed and still inside the playful world
+- The card shelf speaks the same rounded, tinted language as the world around it
 
 ## Colors
 
@@ -146,7 +147,7 @@ Pending: amber tint `#fff3d1` + ink `#7a5200` + line `#ecd9a0`. Published: green
 
 **The Color-Earns-Its-Job Rule.** Every triad color names a job: blue acts (links, buttons, focus), amber highlights (squiggle, warnings, the sticker), green confirms (published, success). No decorative color fields outside the header/footer stripe, the logo, and the sticker.
 
-**The Three-Voices Rule.** Archivo speaks the headings — display 400, headline 400, card titles 500; Nunito carries body (450), labels, and controls (700–800); IBM Plex Mono is for code and the frozen cards' registration layer, and nothing else. The voices never swap.
+**The Three-Voices Rule.** Archivo speaks the headings — display 400, headline 400, card titles 500; Nunito carries body (450), labels, and controls (700–800); IBM Plex Mono is for code, the cards' tool chips and posted dates, and nothing else. The voices never swap.
 
 ## Typography
 
@@ -172,23 +173,25 @@ Pending: amber tint `#fff3d1` + ink `#7a5200` + line `#ecd9a0`. Published: green
 One container, max-width 76rem, 1.25rem side padding. Sticky cream header with the triad-dot
 logo, pill nav (active = blue-tint pill), and the 3px triad stripe beneath. Explore reads
 top-down: display head + squiggle + lede (with the drifting mark loose over it) → filter rail (pill search input, sentence-case
-labels, blue result count) → the frozen plate grid. Content below the fold follows the same
+labels, blue result count) → the card grid. Content below the fold follows the same
 grammar: rounded panels and warm rules.
 
 ## Elevation & Depth
 
 Flat cut-paper color by default. Depth appears as a response: primary buttons rise 1px with a
-soft blue-tinted shadow on hover; the frozen cards keep their own lift. No colored halos at zero
-offset; no glow.
+soft blue-tinted shadow on hover; the cards lift 3px with a warm ink shadow (hover and
+focus-within). No colored halos at zero offset; no glow.
 
 ## Shapes
 
-Rounded everywhere except the frozen cards: pills (999px) for buttons, nav, chips-as-status, and
-tabs; 14px for inputs and panels; 20px for large panels, empty states, and the receipt; 10px for
-code blocks. **The Frozen Shelf Rule:** the project card grid keeps square corners, hairline
-`#c9c7c4` rules, plate `#fbfafc` faces, and its mono registration layer (plate numbers, tags,
-dates, crosshair) — pinned to literal values in `app.css` (section marked FROZEN). Do not retheme
-it; the playful world surrounds the shelf.
+Rounded everywhere: pills (999px) for buttons, nav, chips-as-status, and
+tabs; 14px for inputs and panels; 20px for large panels, empty states, the receipt, and the
+project cards; 10px for
+code blocks. **The Shelf-Speaks-the-World Rule:** the project card grid is cut from the same
+paper as everything else — surface faces, `--line` borders, 20px corners — and keeps its mono
+registration voice only in the tool chips and posted dates. Cards keep their fonts (Archivo 500
+titles, mono chips/dates) and carry no decorative color fields; the triad enters only through
+the chip tints.
 
 ## Components
 
@@ -201,7 +204,7 @@ it; the playful world surrounds the shelf.
 
 ### Chips & statuses
 
-- **Registration chips (frozen cards, project "Uses" row):** mono 0.6563rem uppercase, hairline border, square.
+- **Tool chips:** mono 0.6563rem uppercase; on cards they are pill-shaped cuts of the triad tints (blue / amber / green rotating down the list, per the chip-tint rotation above); on the project page's "Uses" row the base `.tag` stays a square hairline chip.
 - **Status pills:** 0.75rem 800, pill, tinted ground + colored line + dark ink per the status table above.
 
 ### Inputs
@@ -243,6 +246,24 @@ and apart — overlapping when they cross, the 3px cream strokes keeping them re
 and the logo re-forming and scattering on no schedule. Shown only at ≥60rem and under
 `prefers-reduced-motion: no-preference`.
 
+### The Admin Workplace (`/admin/*`)
+
+The reviewer's screens are a workplace, not a page of the public site: they trade the public header
+and footer for one slim sticky bar (triad-dot mark → dashboard; View site, Submit page, Sign out on
+the right) and keep the cream paper, hairline rules, and pill vocabulary. Three standing rules:
+
+- **One place decides.** The queue is read-only — each row is a single link into the editor, where
+  publish / reject / slug / delete all live. No mutation is ever one stray Enter away from a list.
+- **The decision stays in reach.** The editor is two panes: the write-up form on the left, a sticky
+  rail on the right — Decide card (three stacked status buttons, current state disabled), Sent by
+  facts, Web address, and delete inside a `<details>` drawer with its checkbox confirm. Under
+  64rem the rail folds into the column, decision first: reading and deciding is the job, typing is
+  the exception.
+- **Nothing hides behind JavaScript.** Tabs and search are GET links/forms, counts sit on the tabs
+  (counting the searched set, so a count can never disagree with its list), and every form posts
+  without `use:enhance` being available. The submitter's email is reachable from every screen that
+  names them — a reviewer must always be able to answer the person who wrote the thing.
+
 ## Do's and Don'ts
 
 ### Do:
@@ -251,11 +272,11 @@ and the logo re-forming and scattering on no schedule. Shown only at ≥60rem an
 - **Do** keep panels, buttons, and inputs rounded — the world's whole point is fewer straight edges.
 - **Do** set every heading in Archivo — the headings are the register of real work, and Nunito never climbs up there.
 - **Do** self-host fonts from `/static/fonts` (CSP is `font-src 'self'`).
-- **Do** leave the card shelf exactly as printed; it is the site's register of real work.
+- **Do** let the card shelf speak the world's language: rounded paper faces, triad-tinted chips, a settle-in and a lift.
 
 ### Don't:
 
-- **Don't** round, tint, or mono-swap anything inside the FROZEN card-grid section of `app.css`.
+- **Don't** change the cards' fonts — Archivo 500 titles, mono chips and dates are the shelf's voice — or add decorative color fields to them.
 - **Don't** reach for gradients, glass, emoji-as-icons, or drop-shadowed everything.
 - **Don't** set body text in mono or labels in small-caps-stamp style — the voices don't swap.
 - **Don't** repeat the squiggle or add page-level stickers; the seal lives only in the footer, the underline only under the Explore head.
