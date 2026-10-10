@@ -4,9 +4,9 @@ Where Colby staff and faculty share automations, tools, and tips. Someone writes
 in a Google Doc, uploads the `.docx`, the site parses it into a project page. No user accounts —
 anyone on campus can browse and submit; admins publish.
 
-Status: **MVP Phase 4 done** — an admin signs in at `/admin`, reads the queue, edits a write-up, changes
-its status or deletes it. Phase 5 is hardening and the production compose files. See
-[TODO.md](TODO.md) for phases.
+Status: **MVP complete (Phases 1–5)** — production `compose.yml` and both Dockerfiles, a
+Content-Security-Policy, and the Playwright e2e suite are in. See [TODO.md](TODO.md) for the phase
+notes and the v0.2.0 list.
 
 ## Stack
 
@@ -61,18 +61,25 @@ to `http://localhost:8000` and `SESSION_SECRET` to a per-process key, so a missi
 feature rather than blocking `npm run dev`. An unset `ADMIN_PASSWORD` is not a crash either: the site
 works and `/admin` says sign-in is not turned on.
 
-| Variable              | Who       | Notes                                                                                     |
-| --------------------- | --------- | ----------------------------------------------------------------------------------------- |
-| `POSTGRES_USER`       | compose   | superuser created in the volume                                                           |
-| `POSTGRES_PASSWORD`   | compose   |                                                                                           |
-| `POSTGRES_DB`         | compose   |                                                                                           |
-| `DATABASE_URL`        | api       | must match the three above; `localhost` on the host, `db` in compose                      |
-| `SESSION_SECRET`      | web + api | HMAC key for the anti-bot render token **and** the admin session — `openssl rand -hex 32` |
-| `ADMIN_PASSWORD`      | web       | the only admin credential; unset means `/admin` is closed                                 |
-| `ORIGIN`              | web       | public origin, e.g. `https://techshare.colby.edu`                                         |
-| `API_URL`             | web       | where SvelteKit reaches FastAPI (`http://localhost:8123` dev, `http://api:8000` compose)  |
-| `PUBLIC_TEMPLATE_URL` | web       | Google Docs template linked from Submit                                                   |
-| `UPLOAD_DIR`          | api       | source `.docx` files, `/data/uploads` in compose                                          |
+| Variable              | Who            | Notes                                                                                     |
+| --------------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| `POSTGRES_USER`       | compose        | superuser created in the volume                                                           |
+| `POSTGRES_PASSWORD`   | compose        |                                                                                           |
+| `POSTGRES_DB`         | compose        |                                                                                           |
+| `DATABASE_URL`        | api            | must match the three above; `localhost` on the host, `db` in compose                      |
+| `SESSION_SECRET`      | web + api      | HMAC key for the anti-bot render token **and** the admin session — `openssl rand -hex 32` |
+| `ADMIN_PASSWORD`      | web            | the only admin credential; unset means `/admin` is closed                                 |
+| `API_URL`             | web            | where SvelteKit reaches FastAPI (`http://localhost:8123` dev, `http://api:8000` compose)  |
+| `PUBLIC_TEMPLATE_URL` | web            | Google Docs template linked from Submit                                                   |
+| `UPLOAD_DIR`          | api            | source `.docx` files, `/data/uploads` in compose                                          |
+| `MAX_UPLOAD_MB`       | api            | submission size cap, default 10 — the API is the one that actually refuses a file         |
+| `WEB_PORT`            | compose (prod) | the only published port, default 3000; Dokploy maps its public port to this               |
+| `WEB_BODY_SIZE_LIMIT` | compose (prod) | adapter-node body cap, default `12M` — its own default of 512K is smaller than a `.docx`  |
+
+There is no `ORIGIN` variable: this adapter-node derives the origin from the proxy headers instead,
+and an `ORIGIN=` line in an environment file is read by nobody. The three header names themselves
+(`PROTOCOL_HEADER` / `HOST_HEADER` / `ADDRESS_HEADER`) are read from the environment too, but
+`compose.yml` sets them — they are the forwarded-header contract below, not `.env` material.
 
 On a machine running several of these projects, `8000` and `5173` are the ports that collide: another
 stack publishing `0.0.0.0:8000` means `API_URL=http://localhost:8000` talks to _that_ API and nothing
@@ -107,11 +114,71 @@ Three ways the wiring goes wrong, and none of them used to be loud:
   methods). `src/lib/api.ts` runs this same check at startup (`missingApiRoutes`), which is why the
   error could name a stale process instead of just saying _Not Found_.
 
+## Production: compose.yml and Dokploy
+
+`compose.yml` is the file Dokploy runs: three services, one published port, and no routing config —
+Dokploy's proxy terminates TLS and forwards to `web`. `api` and `db` have no `ports:` at all, so the
+only way into the API is through the web server, which is what makes "the browser never talks to
+FastAPI" true at the network level rather than by convention.
+
+- **Ordering.** Migrations run at API startup, so `api` waits for `db` to be _healthy_
+  (`pg_isready` healthcheck in compose). `web` waits only for `api` to have _started_, because
+  Explore is designed to show a "service not responding" notice rather than refuse to boot. The API
+  image carries its own healthcheck, which answers 503 while the database is unreachable.
+- **Volumes.** `db-data` (Postgres) and `uploads` (the source `.docx` files) — both named, both
+  surviving `compose down` without `-v`.
+- **Variables.** Same names as the table above, injected by Dokploy's environment UI.
+  `POSTGRES_PASSWORD` and `SESSION_SECRET` have no default on purpose — compose refuses to start
+  without them, because an empty password on a machine plugged into the campus network is not a
+  failure mode worth discovering later. `ADMIN_PASSWORD` unset means the stack still runs and
+  `/admin` says sign-in is not turned on.
+- **One published port.** `web` takes `${WEB_PORT:-3000}:3000`; Dokploy maps its own public port to
+  that one.
+
+### The forwarded-header contract
+
+adapter-node sits behind Dokploy's proxy and cannot see that on its own; it guesses, and the guesses
+are silent. `compose.yml` sets three headers, and this is the contract to keep if the proxy setup
+ever changes:
+
+- `PROTOCOL_HEADER: x-forwarded-proto` — with nothing to read, adapter-node assumes the request came
+  in over `https`. Kit compares the browser's `Origin` with what the app believes its own origin to
+  be, and on a mismatch answers **every form POST with 403 "Cross-site POST form submissions are
+  forbidden"** — `/submit` and `/admin` both dead while every page still renders.
+- `HOST_HEADER: x-forwarded-host` — the public name, not the service name the proxy may have
+  rewritten `Host` to.
+- `ADDRESS_HEADER: x-forwarded-for` — otherwise `event.getClientAddress()` is the proxy's address,
+  and the per-client submission limit becomes one limit shared by the entire campus. The flip side:
+  with it set, a request arriving without the header throws, so `hooks.server.ts` files such clients
+  under a shared `UNKNOWN_CLIENT` bucket rather than 500-ing the page.
+
+The e2e suite fakes the same three (`playwright.config.ts`), so a local run and the production run
+agree about what a request looks like.
+
+`WEB_BODY_SIZE_LIMIT` is 12M because adapter-node caps a request body at 512 KB by default — smaller
+than a photo-heavy `.docx`. The API refuses anything over `MAX_UPLOAD_MB` anyway; the web cap is the
+same window plus the multipart envelope, so the API's sentence — not a raw 413 — is what a submitter
+with an oversized file reads.
+
+### Smoke-testing it off the server
+
+`compose.local.yml` and `compose.yml` both call their database service `db`, so run the production
+file under its own project name:
+
+```sh
+docker compose -p techshare-prod -f compose.yml up -d --build   # add WEB_PORT=3999 to move the port
+docker compose -p techshare-prod down -v                        # when done; -v drops the volumes
+```
+
+Three healthy containers, `web` reaching `api` by service name, and the CSP header present on the
+built pages is the whole manual check — the Playwright suite covers the behaviour.
+
 ## Layout
 
 ```
 src/          SvelteKit (repo root, no web/ folder)
   env.ts        typed server env (API_URL, SESSION_SECRET, ADMIN_PASSWORD, PUBLIC_TEMPLATE_URL)
+  csp.ts        the Content-Security-Policy, handed to vite.config.ts (build config, not a header hook)
   hooks.server.ts  client address + per-IP limits (submissions, admin sign-in) + `no-store` on /admin
   routes/       Explore, /projects/[slug], /submit, /admin
     +page.server.ts / +page.svelte      Explore: one load, filters in the browser
@@ -120,6 +187,7 @@ src/          SvelteKit (repo root, no web/ folder)
     admin/                              sign-in (not linked from anywhere, blocked in robots.txt)
     admin/dashboard/                    the queue: pending | published | rejected | all
     admin/dashboard/[id]/               one write-up: save, preview, slug, status, delete
+    demo/                               scaffold leftovers + their one e2e test (pending a decision to remove)
     +error.svelte                       friendly 404/5xx shell
   lib/
     api.ts        server-side FastAPI client (timeouts, ApiError, multipart submissions,
@@ -151,17 +219,45 @@ api/          FastAPI, managed with uv
                 against a real Postgres and skip themselves when DATABASE_URL does not answer
   seed.py       uv run python -m app.seed
 compose.local.yml  Postgres only — web and api run on your machine
-compose.yml        web + api + db (Phase 5)
+compose.yml        production: web + api + db, one published port, no routing config (Dokploy)
+Dockerfile         web image (multi-stage node:22-alpine; the runtime stage ships `build/` alone)
+api/Dockerfile     api image (uv on python:3.12-slim, non-root, its own healthcheck)
+playwright.config.ts  e2e: starts the API on :8124 and a fresh `node build` of web on :4173
+e2e/               publishing.e2e.ts (submit → review → Explore → cleanup),
+                   security.e2e.ts (CSP header + cookie flags read off the wire)
 ```
 
-## Checks
+## Tests
 
 ```sh
 npm run check && npm run lint    # svelte-check + eslint/prettier
-npm run test:unit                # vitest (browser + node projects)
+npm run test                     # unit (vitest) then e2e (Playwright)
+npm run test:unit                # vitest only — browser (Chromium) + node projects
+npm run test:e2e                 # Playwright only
 cd api && uv run pytest          # API tests; the submission ones skip without a database
 cd api && uv run python -m compileall -q app   # quick API syntax check
 ```
+
+The unit suites are DB-free (234 web tests in 23 files, 95 API tests). The e2e suite is not, and it
+is the only test that knows whether the halves still fit together:
+
+- **Needs the dev Postgres first**: `docker compose -f compose.local.yml up -d db`.
+- **It starts its own servers** — the API on `:8124`, and a fresh production build (`node build`,
+  the same process `compose.yml` runs, so `BODY_SIZE_LIMIT` and adapter-node's origin handling are
+  under test rather than skipped) on `:4173`. Those ports were chosen to not collide with anything
+  else on a shared machine; `E2E_API_PORT` / `E2E_WEB_PORT` override. The config fakes the proxy
+  headers Dokploy would send and hands both processes a throwaway `SESSION_SECRET` /
+  `ADMIN_PASSWORD`, so the repo's real `.env` is never read into a test.
+- **It leaves the database as it found it**: `e2e/publishing.e2e.ts` files a `.docx`, publishes it,
+  reads it back, then deletes it and asserts the slug 404s afterwards. It asserts on its own row,
+  never on counts, so seed rows cannot break a run. A run killed halfway leaves one pending row in
+  the local queue — delete it from `/admin/dashboard/<id>`, the same cleanup a reviewer would do.
+- **`e2e/security.e2e.ts`** reads the hardening off the wire rather than off the source: the CSP
+  header, the admin cookie flags, and that hostile markup pasted through the admin editor still does
+  not run — three layers (markdown-it, bleach, CSP) with a hole in any one of them still ending in
+  nothing executing.
+- **One worker**, because the tests are one project's life in order. The HTML report lands in
+  `playwright-report/`.
 
 ## How a submission becomes a pending project
 
@@ -224,3 +320,12 @@ survives, and every link gets `target="_blank" rel="noopener noreferrer nofollow
 an event handler or a `javascript:`/`data:` URL it refuses the whole thing and the page shows the
 Markdown source instead. It verifies rather than rewrites, so the failure mode is ugly-but-safe.
 Keep the two allow-lists in step if you change either.
+
+Behind both sanitizers sits a third layer that never reads the markup at all: the
+Content-Security-Policy from `src/csp.ts`, applied at build time (`vite.config.ts` → Kit's `csp`
+option, which nonces the inline scripts Kit itself emits). `script-src 'self'` with no
+`unsafe-inline` means a script that arrives inside a write-up has no nonce and does not run —
+independently of whether either sanitizer above it ever grows a hole. The only loosenings are
+`style-src 'unsafe-inline'` (Svelte inlines component CSS; styles cannot execute), `img-src data:`
+(Vite inlines the favicon) and `ws:` for the dev hot-reload socket. `src/csp.spec.ts` pins the
+directives; `e2e/security.e2e.ts` reads the header off the running server.

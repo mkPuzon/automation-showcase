@@ -26,14 +26,18 @@ import { createRateLimiter } from '#lib/rate-limit';
 import type { Handle } from '@sveltejs/kit/hooks';
 
 /**
- * Name the API this process is about to make, once, at startup.
+ * Name the API this process is about to talk to, at startup.
  *
  * Deliberately not awaited and not fatal: Explore has to come up even with the API down, and the
  * limiters and `no-store` below are the reason this module exists. What this buys is a log line — if
  * `API_URL` is aimed at something that is not this API, it is in the log before the first submitter
  * is told their write-up was "rejected".
+ *
+ * The retries are for `compose.yml`, where this container starts while the api is still applying
+ * migrations: a startup line that says "is the api running?" about a process that answers ten seconds
+ * later teaches whoever reads the log to ignore it.
  */
-void describeApiTarget().then((line) => console.info(`[techshare] ${line}`));
+void describeApiTarget({ retries: 5 }).then((line) => console.info(`[techshare] ${line}`));
 
 /** Write-up submissions: 12 per quarter hour per client. */
 const submissions = createRateLimiter({ limit: 12, windowMs: 15 * 60 * 1000 });

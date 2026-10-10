@@ -1,0 +1,18 @@
+# The api image build context is api/. Everything here is either dev-only or machine-local.
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Test fixtures and the scripts that make them: pytest does not run inside the container.
+tests/
+
+# Uploaded .docx files from local runs, and the dev seed database they came with.
+data/
+
+.env
+.env.*
+.dockerignore
+Dockerfile

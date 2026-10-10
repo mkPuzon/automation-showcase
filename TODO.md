@@ -7,9 +7,10 @@ it and renders it as a project page.
 There are no user accounts. Anyone on the campus network can browse and submit. Safeguards are
 anti-bot only. Only admins can edit or delete projects after submission.
 
-Status: **Phase 4 done and committed** (`828fe9e`) — admin review: sign-in, queue, editor,
-publish/reject, delete, slug control. 198 web + 95 API tests green, `npm run check` and `lint` clean.
-Next up: Phase 5, hardening, docs and the production compose files.
+Status: **Phase 5 done, MVP complete** — production `compose.yml`, both Dockerfiles, CSP, the README
+write-up, the recreated test files, and the Playwright e2e are in and green (234 web + 9 e2e + 95
+API, `npm run check` 0/0, `npm run lint` clean — re-run after the README landed). Left: the final
+commit.
 
 ---
 
@@ -177,7 +178,11 @@ form actions, not API endpoints.
 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` / `DATABASE_URL`, `ADMIN_PASSWORD` (web
 container only), `SESSION_SECRET` (web + api sign/verify the session token with it; e.g. `openssl
 rand -hex 32`), `PUBLIC_TEMPLATE_URL` (Google Doc template), `UPLOAD_DIR` (default `/data/uploads`),
-`API_URL` (as seen by the web container), `ORIGIN`.
+`MAX_UPLOAD_MB` (default 10), `API_URL` (as seen by the web container). Production adds `WEB_PORT`
+(the only published port) and `WEB_BODY_SIZE_LIMIT` (default 12M; adapter-node's own default is 512K),
+and reads the proxy through `PROTOCOL_HEADER` / `HOST_HEADER` / `ADDRESS_HEADER` — set in
+`compose.yml`, not in the environment file. There is **no `ORIGIN`** in this adapter-node any more; an
+`ORIGIN=` line in an environment file is read by nobody.
 
 ---
 
@@ -311,11 +316,10 @@ rand -hex 32`), `PUBLIC_TEMPLATE_URL` (Google Doc template), `UPLOAD_DIR` (defau
 >   Explore`, Phase 5) and any admin handling of the queue (Phase 4).
 > - ⚠️ **Test files lost during Phase 3.** Four were deleted from the working tree without ever being
 >   committed, so git could not return them: `src/lib/api.spec.ts`, `src/tests/ui-contract.spec.ts`,
->   `src/routes/proj-page.spec.ts`, `src/lib/components/ProjectCard.svelte.spec.ts`.
->   **`api.spec.ts` is back** (13 tests, green, committed in `828fe9e`). **Three are still missing**:
->   the UI contract, the project detail page and the card guards are not running. `route-contract.spec.ts`
->   and `ProjectBrowser`/`ProjectBody.svelte.spec.ts` now cover some of the same ground; recreating the
->   three proper specs is a Phase 5 item.
+>   `src/routes/proj-page.spec.ts`, `src/lib/components/ProjectCard.svelte.spec.ts`. **All four are back**
+>   — `api.spec.ts` in `828fe9e`, the other three written again in the Phase 5 pass. The lesson stands:
+>   commit the tests in the same commit as the behaviour they cover, or they are not there when you need
+>   them.
 
 ### Phase 4 — Admin
 - [x] `/admin` login page (not linked from public nav): form action compares `ADMIN_PASSWORD` in
@@ -369,10 +373,10 @@ rand -hex 32`), `PUBLIC_TEMPLATE_URL` (Google Doc template), `UPLOAD_DIR` (defau
 ---
 
 ### Phase 5 — hardening, docs, production shape
-- [ ] `compose.yml` with `web` + `api` + `db`, named `db-data` and `uploads` volumes, no Traefik,
+- [x] `compose.yml` with `web` + `api` + `db`, named `db-data` and `uploads` volumes, no Traefik,
       `api`/`db` unpublished
-- [ ] Dockerfiles for `api` (uv/`python:3.12-slim`) and `web` (multi-stage, `node:22-alpine`)
-- [ ] structured error handling between web and api (timeouts, api-down message)
+- [x] Dockerfiles for `api` (uv/`python:3.12-slim`) and `web` (multi-stage, `node:22-alpine`)
+- [x] structured error handling between web and api (timeouts, api-down message)
       - Partially done while debugging Phase 4: an unexpected `/api/admin/*` answer now quotes the
         path **and** the base URL it tried, because "`Error 503` + `Nothing was found there (404)`" was
         an `API_URL` aimed at another project's container on `:8000`, and nothing said so.
@@ -381,14 +385,98 @@ rand -hex 32`), `PUBLIC_TEMPLATE_URL` (Google Doc template), `UPLOAD_DIR` (defau
       - Done: the stale-process trap that produced the admin page's `Error 503`, and the
         `openapi.json` / 401-vs-404 checks that catch it. Write-up in the Phase 4 notes above; the
         operator-facing version is in the README troubleshooting section.
-- [ ] Recreate the three Phase 3 test files that were lost and never committed:
+      - Done now: the startup probe retries (`describeApiTarget({ retries: 5 })`, 2s apart) so a cold
+        `docker compose up` says something true instead of "not responding" about an API still migrating.
+- [x] Recreate the three Phase 3 test files that were lost and never committed:
       `src/tests/ui-contract.spec.ts`, `src/routes/proj-page.spec.ts`,
       `src/lib/components/ProjectCard.svelte.spec.ts` (see the Phase 3 notes)
-- [ ] Content-Security-Policy on pages that render submitted content (no inline scripts) — this is the
+- [x] Content-Security-Policy on pages that render submitted content (no inline scripts) — this is the
       main blast-radius limiter for the HttpOnly admin cookie, since those pages render `.docx` output
-- [ ] README: local setup (`compose.local.yml up db` → migrate/seed → `npm run dev` + `uvicorn`)
-- [ ] Playwright e2e: submit → pending → admin publishes → appears on Explore
-- [ ] final pass: `npm run check`, `npm run lint`, `npm run test`
+- [x] README: local setup (`compose.local.yml up db` → migrate/seed → `npm run dev` + `uvicorn`), and
+      the production half of this phase: `compose.yml`, the variables it reads, the forwarded-header
+      contract below, and the `npm run test` (unit + e2e) commands
+- [x] Playwright e2e: submit → pending → admin publishes → appears on Explore
+- [x] final pass: `npm run check`, `npm run lint`, `npm run test` — all green as written up below;
+      re-run after the README lands, since that is the last thing to change
+
+> **Phase 5 notes.**
+> - Files added: `compose.yml`, `Dockerfile`, `.dockerignore`, `api/Dockerfile`, `api/.dockerignore`,
+>   `src/csp.ts`, `src/csp.spec.ts`, `playwright.config.ts`, `e2e/session.ts`,
+>   `e2e/publishing.e2e.ts`, `e2e/security.e2e.ts`, and the three recreated specs. `playwright-report/`
+>   and `test-results/` are now ignored by both git and prettier.
+> - **One published port.** `web` takes `${WEB_PORT:-3000}:3000`; `api` and `db` expose nothing, so the
+>   only way into the API is through the web server. `api` waits for `db` to be *healthy* (migrations
+>   run at API startup, so it must not race the database); `web` only waits for `api` to have *started*,
+>   because Explore is designed to render a "service not responding" notice rather than refuse to boot.
+>   `pg_isready` healthcheck in compose, the API's healthcheck in its own Dockerfile.
+> - **adapter-node cannot tell it is behind a proxy, and guesses wrong twice.** `compose.yml` sets
+>   `PROTOCOL_HEADER`/`HOST_HEADER`/`ADDRESS_HEADER` for three separate failure modes, all silent:
+>   - With nothing to read, adapter-node assumes the request came in over **`https`**. Kit compares the
+>     browser's `Origin` to what the app believes its own origin is, and on a mismatch answers **every
+>     form POST with 403 "Cross-site POST form submissions are forbidden"** — `/submit` and `/admin`
+>     both dead while every page still renders. Reproduced locally, not theorised: it is what the e2e
+>     hit first. Note this adapter-node has **no `ORIGIN` environment variable** (it is a build-time
+>     adapter option now), and `compose.yml` no longer passes one — if an environment file carries an
+>     `ORIGIN=` line, nothing reads it any more. `.env*` is user-maintained here (the tooling refuses
+>     those paths), so that cleanup is yours.
+>   - `ADDRESS_HEADER` fixes `event.getClientAddress()`, which is what the submission and sign-in rate
+>     limiters key on. Without it, the whole campus shares one 12-submissions-per-15-minutes bucket.
+>   - But with `ADDRESS_HEADER` set, adapter-node **throws** on any request that arrives without
+>     `x-forwarded-for` — and `clientIp()` called it unguarded, so `hooks.server.ts` turned a
+>     container-local request into a 500 on the home page. `clientIp()` now catches it and files those
+>     clients under `UNKNOWN_CLIENT`; that is a shared bucket, which beats a dead page.
+> - `BODY_SIZE_LIMIT` **defaults to 512 KB** in adapter-node — smaller than a photo-heavy `.docx` — so
+>   compose sets 12M: the API's own 10 MiB limit plus the multipart envelope, which keeps the answer a
+>   submitter sees the API's sentence rather than a raw 413 from the web layer.
+> - **CSP is build configuration, not a middleware hook**: `src/csp.ts` exports the directives and
+>   `vite.config.ts` hands them to `sveltekit({ csp: { mode: 'auto', directives } })`, which applies
+>   them to every document response and nonce-stamps Kit's own inline bootstrap script. Writing it as a
+>   `hooks.server.ts` header would have meant managing that nonce by hand. `script-src 'self'` with no
+>   `unsafe-inline`; the deliberate loosenings are `style-src 'unsafe-inline'` (Svelte inlines component
+>   CSS; nonces do not cover styles, and styles cannot execute) and `img-src data:` (Vite inlines the
+>   favicon); `connect-src` is `'self'` in production and adds `ws:` only for the dev server's hot reload.
+>   `src/csp.spec.ts` pins the contract, `e2e/security.e2e.ts` reads the header off the running server.
+> - **The e2e runs `node build`, not `vite preview`** — the same process `compose.yml` runs, so
+>   `BODY_SIZE_LIMIT` and adapter-node's origin handling are under test and not skipped. Ports 8124
+>   (API) and 4173 (web) so it cannot mistake another project's container for ours; `E2E_API_PORT` /
+>   `E2E_WEB_PORT` override. It files its own `.docx`, publishes it, reads it back, then deletes it and
+>   asserts the slug 404s afterwards, so it leaves the dev database as it found it and asserts on its
+>   own row rather than on counts. One worker, because the three tests are one project's life in order.
+>   `MIN_RENDER_AGE_MS` is imported from `src/lib/antibot.ts` rather than copied, so raising the anti-bot
+>   delay makes the test wait longer instead of failing.
+> - **What the browser confirmed that no unit test could**: a `Secure` cookie *is* accepted and sent on
+>   `http://localhost` (Chromium treats localhost as trustworthy), so the e2e exercises the production
+>   cookie flags without a certificate; markup with `<script>`, `onerror`, `onclick` and a
+>   `javascript:` href comes out of the API as inert text; and a script armed at runtime with
+>   `document.createElement('script')` never runs, with `securitypolicyviolation` firing for it —
+>   the CSP holding independently of the two sanitizers upstream of it.
+> - Tests: **234 web** in 23 files (`admin-session` 40, `validation` 24, `antibot` 20, `api` 15,
+>   `ui-contract` 14, `csp` 7, `proj-page` 6, `ProjectCard` 6 …), **9 e2e** (8 of them new; the ninth is
+>   the scaffold's own `/demo` test, still here pending the decision below), **95 API**. `npm run check`
+>   0 errors / 0 warnings, `npm run lint` clean.
+> - The production stack was smoke-tested as a real deployment (`docker compose -p techshare-prod`, web
+>   published on `:3999`): three containers healthy, `web` reaching `api` by service name, CSP header
+>   present on the built pages. Torn down since — `docker ps` is empty, nothing left to clean up.
+> - **README (the last item).** Now covers the production half: a `compose.yml`/Dokploy section
+>   (ordering via the `db` healthcheck, the two named volumes, no-default-on-purpose variables, one
+>   published port), the forwarded-header contract with the silent failure modes spelled out, and
+>   smoke-test instructions under `-p techshare-prod`. The environment table dropped `ORIGIN` (this
+>   adapter-node reads nobody's `ORIGIN` env var; an `ORIGIN=` line in an environment file is dead
+>   weight — the web `Dockerfile` comment that still mentioned it is fixed too) and gained
+>   `MAX_UPLOAD_MB`, `WEB_PORT` and `WEB_BODY_SIZE_LIMIT`. "Checks" became "Tests": what `npm run
+>   test` runs, the e2e's Postgres prerequisite, its own ports and throwaway credentials, the
+>   leave-the-database-as-you-found-it contract, and where the report lands. The CSP got its
+>   paragraph as the third layer under "How a project body reaches the page", and the layout section
+>   lists `src/csp.ts`, `e2e/`, `playwright.config.ts` and both Dockerfiles.
+> - **Final pass, after the README landed:** `npm run check` 0 errors / 0 warnings, `npm run lint`
+>   clean (prettier realigned the README's table), **234 web + 9 e2e + 95 API** — all green.
+>   OrbStack was down when the pass started; started it and the `compose.local.yml` db came up
+>   healthy, so the e2e and the DB-backed API tests had their Postgres.
+> - Left for the user: the commit itself, and two pending decisions — the scaffold's `/demo` routes
+>   + `src/lib/vitest-examples/` (the ninth e2e test is theirs), and the untracked 2.5 MB
+>   `example-project.docx` in the repo root, referenced by nothing (keep out of git or delete;
+>   `*.docx` is already docker-ignored). Any `ORIGIN=` line in `.env`/`.env.example` can come out —
+>   those files are user-maintained here.
 
 ## Known simplifications to revisit
 

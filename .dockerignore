@@ -1,0 +1,38 @@
+# Build context for the web image. The image is built from a clean `npm ci` + `vite build`, so
+# nothing installed, generated, or machine-local belongs in here.
+
+node_modules
+.svelte-kit
+build
+dist
+output
+
+# Not the web app's context at all: the API has its own image and Dockerfile (./api).
+api
+.venv
+__pycache__
+**/__pycache__
+*.py[cod]
+.pytest_cache
+
+# Secrets and local config. Kit reads `.env` from the project at build time, and an image that has
+# baked in a real SESSION_SECRET / ADMIN_PASSWORD is a secret in every registry copy of it — the
+# runtime container gets these from the environment instead.
+.env
+.env.*
+.npmrc
+
+# Repo docs and orchestration
+.git
+.gitignore
+*.md
+compose*.yml
+.vscode
+.agents
+
+# Test and document artifacts the build never reads
+test-results
+playwright-report
+coverage
+*.docx
+data

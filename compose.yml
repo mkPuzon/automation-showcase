@@ -1,0 +1,94 @@
+# Production shape: web + api + db, one Postgres volume and one uploads volume.
+#
+# No Traefik and no routing config of any kind — Dokploy publishes the `web` service and terminates
+# TLS itself. `db` and `api` deliberately have no `ports:` at all: the only thing reachable from
+# outside is the web container, which is what makes "the browser never talks to FastAPI" true at the
+# network level rather than by convention.
+#
+#   docker compose up -d --build      # on the server (or let Dokploy run it)
+#
+# Variables come from the repo-root `.env` here and from Dokploy's environment UI in production;
+# same names either way. `compose.local.yml` is the dev file (Postgres only).
+#
+# On a dev machine: `compose.local.yml` and this file both call their database service `db`, so
+# `docker compose -f compose.yml up` would rebuild the container your dev API is talking to. Run the
+# production file under its own project name (`docker compose -p techshare-prod -f compose.yml up`)
+# if you want both at once.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-techshare}
+      # No default on purpose: an empty password on a machine plugged into the campus network is not
+      # a failure mode worth discovering later. Compose refuses to start without it.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-techshare}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    # Migrations run at API startup, so it has to come up after the database accepts connections.
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Percent-encode anything URL-special in POSTGRES_PASSWORD; psycopg parses this as a URL.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-techshare}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-techshare}
+      # Same value as `web` gets: it verifies the session cookie SvelteKit signed.
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET must be set on both web and api}
+      UPLOAD_DIR: /data/uploads
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-10}
+    volumes:
+      - uploads:/data/uploads
+
+  web:
+    build: .
+    restart: unless-stopped
+    # Not `service_healthy`: Explore renders a "service not responding" notice when the API is down,
+    # so the web container has no business refusing to start because of it.
+    depends_on:
+      - api
+    ports:
+      # The published port; Dokploy maps its own public port to this one.
+      - '${WEB_PORT:-3000}:3000'
+    environment:
+      # Container-network name, not a host port — this is the line that used to be wrong by hand.
+      API_URL: http://api:8000
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET must be set on both web and api}
+      # Unset means /admin explains that sign-in is not turned on, rather than the stack failing.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      # adapter-node cannot guess that Dokploy's proxy terminated TLS, and guesses wrong in two ways
+      # that are both invisible until someone submits a form. These three lines are the contract:
+      #
+      # PROTOCOL_HEADER — with nothing to read, the request origin is assumed `https://…`. The browser
+      #   sends `Origin: https://…` and Kit compares it to what the app thinks its own origin is; on a
+      #   mismatch Kit answers *every* form POST with 403 "Cross-site POST form submissions are
+      #   forbidden". Reads as: /submit and /admin both stop working, while every page still renders.
+      # HOST_HEADER — the public name, not the service name the proxy may have rewritten Host to.
+      # ADDRESS_HEADER — otherwise `event.getClientAddress()` is the proxy's address, and the API's
+      #   per-client submission limit becomes one limit shared by the entire campus.
+      #
+      # Traefik sets all three by default; XFF_DEPTH (1) is the number of hops in front of the
+      # container, which is how `x-forwarded-for` is read. Leave it alone unless a second proxy appears.
+      PROTOCOL_HEADER: x-forwarded-proto
+      HOST_HEADER: x-forwarded-host
+      ADDRESS_HEADER: x-forwarded-for
+      PUBLIC_TEMPLATE_URL: ${PUBLIC_TEMPLATE_URL:-}
+      # adapter-node caps a request body at 512 KB unless told otherwise, which is smaller than a
+      # photo-heavy .docx. The API refuses anything over MAX_UPLOAD_MB anyway; this is the same
+      # window plus the multipart envelope, so the API's sentence — not a raw 413 — is what a
+      # submitter with an oversized file reads.
+      BODY_SIZE_LIMIT: ${WEB_BODY_SIZE_LIMIT:-12M}
+
+volumes:
+  db-data:
+  uploads:

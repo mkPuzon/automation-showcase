@@ -232,7 +232,46 @@ export async function submitProject(
  *
  * Never throws: an unreachable API is a sentence in the log, not a web container that will not boot.
  */
-export async function describeApiTarget(): Promise<string> {
+export async function describeApiTarget({
+	retries = 0,
+	delayMs = 2000
+}: ApiProbeOptions = {}): Promise<string> {
+	const first = await probeApiTargetOnce();
+	// Only silence is worth repeating. "Something answered and it is not this API" is already the
+	// diagnosis, and asking again cannot change it.
+	if (first.answered || retries <= 0) return first.line;
+
+	for (let attempt = 1; attempt <= retries; attempt++) {
+		await sleep(delayMs);
+		const again = await probeApiTargetOnce();
+		if (again.answered) {
+			return `${again.line} (came up after ${attempt} retr${attempt === 1 ? 'y' : 'ies'})`;
+		}
+	}
+	const waited = Math.round((retries * delayMs) / 1000);
+	return `${first.line} Kept looking for ${waited}s.`;
+}
+
+export type ApiProbeOptions = {
+	/**
+	 * Extra attempts, spaced `delayMs` apart, for the case where the api container is still booting.
+	 *
+	 * In `compose.yml` the web service starts as soon as the api container starts, and the api spends a
+	 * few seconds applying migrations before it binds :8000. Without retries the first line the web
+	 * container ever logs is "is the api running?" — which is true for about five seconds and then
+	 * never true again, and a startup log that lies once is worse than one that says nothing.
+	 */
+	retries?: number;
+	delayMs?: number;
+};
+
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+type Probe = { answered: true; line: string } | { answered: false; line: string };
+
+async function probeApiTargetOnce(): Promise<Probe> {
 	const url = `${baseUrl()}/api/health`;
 	let response: Response;
 	try {
@@ -241,7 +280,10 @@ export async function describeApiTarget(): Promise<string> {
 			signal: AbortSignal.timeout(STARTUP_TIMEOUT_MS)
 		});
 	} catch {
-		return `nothing answered ${url} — is the api running? Submissions and /admin will fail.`;
+		return {
+			answered: false,
+			line: `nothing answered ${url} — is the api running? Submissions and /admin will fail.`
+		};
 	}
 
 	const body: unknown = await response.json().catch(() => null);
@@ -255,19 +297,26 @@ export async function describeApiTarget(): Promise<string> {
 			(body as { database?: unknown }).database === 'up' ? 'database up' : 'DATABASE DOWN';
 		const predating = await routesThisApiDoesNotServe();
 		if (predating.length > 0) {
-			return (
-				`talking to techshare-api ${version} at ${baseUrl()} (${database}) — but it does not serve ` +
-				`${predating.join(', ')}, so that process predates those routes. Restart it ` +
-				'(npm run api:dev passes --reload).'
-			);
+			return {
+				answered: true,
+				line:
+					`talking to techshare-api ${version} at ${baseUrl()} (${database}) — but it does not serve ` +
+					`${predating.join(', ')}, so that process predates those routes. Restart it ` +
+					'(npm run api:dev passes --reload).'
+			};
 		}
-		return `talking to techshare-api ${version} at ${baseUrl()} (${database})`;
+		return {
+			answered: true,
+			line: `talking to techshare-api ${version} at ${baseUrl()} (${database})`
+		};
 	}
-	return (
-		`something answered ${url} but it is not this API (status ${response.status}` +
-		`${version === null ? ', no version in the body' : ''}) — every submission and /admin call will ` +
-		'404. Check API_URL.'
-	);
+	return {
+		answered: true,
+		line:
+			`something answered ${url} but it is not this API (status ${response.status}` +
+			`${version === null ? ', no version in the body' : ''}) — every submission and /admin call will ` +
+			'404. Check API_URL.'
+	};
 }
 
 /** The routes `src/lib/api.ts` calls, and that therefore have to exist on whatever `API_URL` names. */

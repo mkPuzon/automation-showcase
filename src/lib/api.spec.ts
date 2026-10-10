@@ -170,6 +170,36 @@ describe('describeApiTarget', () => {
 		expect(await describeApiTarget()).toContain('is the api running');
 	});
 
+	it('asks again while the api is still booting, and says when it arrives', async () => {
+		// The compose startup race: the api binds :8000 a few seconds after its container starts.
+		let healthCalls = 0;
+		vi.stubGlobal(
+			'fetch',
+			vi.fn(async (input: string) => {
+				const path = new URL(String(input)).pathname;
+				if (path === '/api/health' && ++healthCalls < 3) throw new TypeError('fetch failed');
+				return path === '/api/health' ? respond(200, HEALTH) : respond(200, openapi(CURRENT));
+			})
+		);
+
+		const line = await describeApiTarget({ retries: 4, delayMs: 1 });
+		expect(healthCalls).toBe(3);
+		expect(line).toContain('techshare-api 0.1.0');
+		expect(line).toContain('came up after 2 retries');
+	});
+
+	it('says how long it kept looking when the api never came up', async () => {
+		const probe = vi.fn(async () => {
+			throw new TypeError('fetch failed');
+		});
+		vi.stubGlobal('fetch', probe);
+
+		const line = await describeApiTarget({ retries: 2, delayMs: 500 });
+		expect(probe).toHaveBeenCalledTimes(3); // the first look plus two retries
+		expect(line).toContain('is the api running');
+		expect(line).toContain('Kept looking for 1s');
+	});
+
 	it('lists the routes a live process is missing', () => {
 		expect(missingApiRoutes(openapi(CURRENT))).toEqual([]);
 		expect(missingApiRoutes(openapi(['/api/projects', '/api/health']))).toEqual([

@@ -13,6 +13,7 @@ import {
 	checkRenderToken,
 	clientIp,
 	issueRenderToken,
+	UNKNOWN_CLIENT,
 	renderTokenMessage
 } from '#lib/antibot';
 
@@ -115,5 +116,20 @@ describe('clientIp', () => {
 
 	it('uses SvelteKit’s own answer with no proxy in front', () => {
 		expect(clientIp(event({}, '127.0.0.1'))).toBe('127.0.0.1');
+	});
+
+	it('shares one bucket rather than failing the page when the proxy header is missing', () => {
+		// Verbatim what adapter-node does when ADDRESS_HEADER is set (compose.yml) and a request arrives
+		// without going through the proxy — a container-local health check, or Playwright's readiness
+		// probe. A 500 on the home page was the old behaviour.
+		const withoutProxyHeader = {
+			request: new Request('http://localhost:4173/'),
+			getClientAddress: () => {
+				throw new Error(
+					'Address header was specified with ADDRESS_HEADER=x-forwarded-for but is absent'
+				);
+			}
+		};
+		expect(clientIp(withoutProxyHeader)).toBe(UNKNOWN_CLIENT);
 	});
 });

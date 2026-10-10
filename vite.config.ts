@@ -2,8 +2,9 @@ import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import adapter from '@sveltejs/adapter-node';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { cspDirectives } from './src/csp.ts';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
 	plugins: [
 		sveltekit({
 			compilerOptions: {
@@ -14,7 +15,16 @@ export default defineConfig({
 
 			// adapter-node: we deploy with Docker on campus (Dokploy handles routing), so the
 			// build target is a plain Node server on PORT 3000. See compose.yml.
-			adapter: adapter()
+			adapter: adapter(),
+
+			// A Content-Security-Policy header on every server-rendered page. `mode: 'auto'` hands Kit
+			// the job of noncing the inline scripts and styles Kit itself emits (and hashing them on a
+			// prerendered page, where a nonce would be static and so useless). Directives, and why each
+			// one is what it is: src/csp.ts.
+			csp: {
+				mode: 'auto',
+				directives: cspDirectives({ dev: command === 'serve' })
+			}
 		})
 	],
 	test: {
@@ -45,4 +55,4 @@ export default defineConfig({
 			}
 		]
 	}
-});
+}));

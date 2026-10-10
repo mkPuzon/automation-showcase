@@ -114,5 +114,17 @@ export function clientIp(event: { request: Request; getClientAddress(): string }
 		if (last) return last;
 	}
 
-	return event.getClientAddress();
+	// adapter-node throws here when `ADDRESS_HEADER` names a header the request does not carry — a
+	// request that reached the container without going through the proxy. Nothing downstream of this
+	// function is worth failing a page view over: the address only chooses a rate-limit bucket, so
+	// header-less clients share one bucket rather than taking the site down. Dev has no
+	// `ADDRESS_HEADER` set and never gets here.
+	try {
+		return event.getClientAddress();
+	} catch {
+		return UNKNOWN_CLIENT;
+	}
 }
+
+/** The bucket for a client this app cannot name. See the `getClientAddress` note above. */
+export const UNKNOWN_CLIENT = 'unknown';
