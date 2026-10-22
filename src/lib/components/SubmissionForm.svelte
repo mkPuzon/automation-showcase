@@ -203,7 +203,7 @@
 				aria-invalid={visible.first_name ? true : undefined}
 				aria-describedby={describedBy('first_name')}
 			/>
-			<p class="hint" id="hint-first_name">Shown next to your write-up.</p>
+			<p class="hint" id="hint-first_name"></p>
 			{#if visible.first_name}
 				<p class="error" id="error-first_name">{visible.first_name}</p>
 			{/if}
@@ -223,7 +223,7 @@
 				aria-invalid={visible.last_name ? true : undefined}
 				aria-describedby={describedBy('last_name')}
 			/>
-			<p class="hint" id="hint-last_name">Shown next to your write-up.</p>
+			<p class="hint" id="hint-last_name"></p>
 			{#if visible.last_name}
 				<p class="error" id="error-last_name">{visible.last_name}</p>
 			{/if}
@@ -246,8 +246,7 @@
 			aria-describedby={describedBy('email')}
 		/>
 		<p class="hint" id="hint-email">
-			Only <code>@colby.edu</code> addresses are accepted. It is never published — it is how an admin
-			reaches you about the write-up.
+			Please use your @colby.edu address
 		</p>
 		{#if visible.email}
 			<p class="error" id="error-email">{visible.email}</p>
@@ -255,7 +254,7 @@
 	</div>
 
 	<div class="field">
-		<label for="department">Department or unit</label>
+		<label for="department">Department or Office</label>
 		<input
 			id="department"
 			name="department"
@@ -268,7 +267,7 @@
 			aria-describedby={describedBy('department')}
 		/>
 		<p class="hint" id="hint-department">
-			e.g. Environmental Studies, Computing Services, Admissions.
+			e.g. Environmental Studies, Admissions 
 		</p>
 		{#if visible.department}
 			<p class="error" id="error-department">{visible.department}</p>
@@ -282,7 +281,7 @@
 			name="title"
 			type="text"
 			maxlength={MAX_TITLE_CHARS}
-			placeholder="Grading 120 lab reports with a rubric macro"
+			placeholder="Automating assignment reminder emails"
 			required
 			bind:value={text.title}
 			onblur={mark('title')}
@@ -290,7 +289,7 @@
 			aria-describedby={describedBy('title')}
 		/>
 		<p class="hint" id="hint-title">
-			Say what it does, in the words you would use in the hallway — that is what people search.
+			A brief, informative title so others can quickly understand the problem you're solving.
 		</p>
 		{#if visible.title}
 			<p class="error" id="error-title">{visible.title}</p>
@@ -303,15 +302,14 @@
 			id="technologies"
 			name="technologies"
 			type="text"
-			placeholder="Python, Google Sheets, Zapier"
+			placeholder="Google Sheets, Python, Gemini, Web Browsers"
 			bind:value={text.technologies}
 			onblur={mark('technologies')}
 			aria-invalid={visible.technologies ? true : undefined}
 			aria-describedby={describedBy('technologies')}
 		/>
 		<p class="hint" id="hint-technologies">
-			Comma-separated. These are what Explore can be filtered by, so name the ones a colleague would
-			search for.
+			What technologies you used in, comma-separated. 
 		</p>
 		{#if visible.technologies}
 			<p class="error" id="error-technologies">{visible.technologies}</p>
@@ -324,15 +322,14 @@
 			id="contributors"
 			name="contributors"
 			type="text"
-			placeholder="Karen Vreeland, Facilities IT"
+			placeholder="John Doe, ITS"
 			bind:value={text.contributors}
 			onblur={mark('contributors')}
 			aria-invalid={visible.contributors ? true : undefined}
 			aria-describedby={describedBy('contributors')}
 		/>
 		<p class="hint" id="hint-contributors">
-			Anyone else who should be credited, comma-separated. They are listed, not linked to an account
-			— there are no accounts here.
+			Anyone else, individuals or departments, who should be credited, comma-separated
 		</p>
 		{#if visible.contributors}
 			<p class="error" id="error-contributors">{visible.contributors}</p>
@@ -352,8 +349,7 @@
 			aria-describedby={describedBy('document')}
 		/>
 		<p class="hint" id="hint-document">
-			Up to {MAX_UPLOAD_MB} MB. In Google Docs: File → Download → Microsoft Word (.docx). Images are not
-			published yet, so describe anything a screenshot would show.
+			Up to {MAX_UPLOAD_MB} MB. In Google Docs: File → Download → Microsoft Word (.docx)
 		</p>
 		{#if visible.document}
 			<p class="error" id="error-document">{visible.document}</p>
@@ -362,7 +358,6 @@
 
 	<p class="submit-form__actions">
 		<button type="submit" disabled={busy}>{busy ? 'Sending…' : 'Submit for review'}</button>
-		<span class="hint">Nothing is published until an admin reads it — usually a few days.</span>
 	</p>
 </form>
 

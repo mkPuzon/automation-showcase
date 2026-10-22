@@ -36,13 +36,13 @@
 	<h2>What happens next</h2>
 	<ul class="hint submit-steps">
 		<li>
-			Your write-up lands as <strong>pending</strong> — it is not on Explore yet, and has no public page.
+			After submitting, your write-up will be reviewed by an admin.
 		</li>
 		<li>
 			An admin reads it, fixes any formatting the <code>.docx</code> export mangled, then publishes it.
 		</li>
 		<li>
-			Published is when it shows up in Explore and becomes searchable by technology and department.
+			"Published" means the project shows up in Explore and becomes searchable by technology and department.
 		</li>
 	</ul>
 {/if}
