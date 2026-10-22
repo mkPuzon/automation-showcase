@@ -50,7 +50,7 @@ services:
     volumes:
       - uploads:/data/uploads
 
-  frontend:
+  web:
     build: .
     restart: unless-stopped
     # Not `service_healthy`: Explore renders a "service not responding" notice when the API is down,
