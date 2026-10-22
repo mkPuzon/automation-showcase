@@ -21,6 +21,7 @@ import io
 import re
 import zipfile
 from typing import Final
+import uuid
 
 import bleach
 import mammoth
@@ -72,6 +73,7 @@ DOCX_ALLOWED_TAGS: Final[list[str]] = [
     "h5",
     "h6",
     "a",
+    "img",
     "table",
     "thead",
     "tbody",
@@ -86,7 +88,7 @@ DOCX_ALLOWED_TAGS: Final[list[str]] = [
 
 DOCX_ALLOWED_PROTOCOLS: Final[list[str]] = ["http", "https", "mailto"]
 
-DOCX_ALLOWED_ATTRIBUTES: Final[dict[str, list[str]]] = {"a": ["href", "title"]}
+DOCX_ALLOWED_ATTRIBUTES: Final[dict[str, list[str]]] = {"a": ["href", "title"], "img": ["src", "alt"]}
 
 DEFAULT_MAX_BODY_CHARS: Final[int] = 200_000
 
@@ -116,9 +118,16 @@ class DocxError(Exception):
         self.field = field
 
 
-def _drop_image(_image) -> str:
-    """mammoth `convert_image` hook: return text (empty) instead of an <img> with a data: URI."""
-    return ""
+def _make_convert_image(images: list):
+    """Return a mammoth convert_image hook that collects bytes and emits a Markdown-friendly <img>."""
+    def convert(image):
+        img_uuid = str(uuid.uuid4())
+        with image.open() as stream:
+            data = stream.read()
+        images.append((img_uuid, image.content_type or "image/png", data))
+        alt = image.alt_text or ""
+        return [("src", f"/images/{img_uuid}"), ("alt", alt)]
+    return convert
 
 
 def _assert_docx_container(data: bytes) -> None:
@@ -159,7 +168,6 @@ def _to_markdown(html: str) -> str:
         html,
         heading_style="ATX",
         bullets="-",
-        strip=["img"],  # belt-and-braces: nothing image-shaped should be left
         # Filenames are the currency of these write-ups (`clean_sensors.py`, `post_directory.py`).
         # Escaping every underscore makes the stored Markdown painful to read in the admin textarea
         # for a risk — an odd count of `_` turning into emphasis — that is rare and visible.
@@ -179,27 +187,29 @@ def docx_to_markdown(
     data: bytes,
     *,
     max_body_chars: int = DEFAULT_MAX_BODY_CHARS,
-) -> str:
-    """Parse `.docx` bytes into sanitized Markdown.
+) -> tuple[str, list[tuple[str, str, bytes]]]:
+    """Parse `.docx` bytes into sanitized Markdown plus extracted images.
 
-    Raises:
-        DocxError: not a .docx, unreadable, or it contains nothing worth publishing.
+    Returns (markdown, images) where images is a list of (uuid, mime_type, bytes).
+    Raises DocxError on unusable input.
     """
     if not data:
         raise DocxError("The uploaded file is empty.")
 
     _assert_docx_container(data)
 
+    images: list[tuple[str, str, bytes]] = []
+
     try:
         result = mammoth.convert_to_html(
             io.BytesIO(data),
             style_map=STYLE_MAP,
-            convert_image=_drop_image,
+            convert_image=mammoth.images.img_element(_make_convert_image(images)),
         )
-    except Exception as exc:  # a corrupt part, an exotic element, an unreadable stream
+    except Exception as exc:
         raise DocxError(
-            "That .docx could not be read. Try re-downloading it from Google Docs and uploading "
-            "again; if it keeps failing, send the write-up to Computing Services."
+            "That .docx could not be read. Try re-downloading it from the original source and uploading "
+            "again; if it keeps failing, contact the DavisAI team at davisai@colby.edu"
         ) from exc
 
     markdown = html_to_markdown(result.value)
@@ -216,4 +226,4 @@ def docx_to_markdown(
             "text before it can be reviewed."
         )
 
-    return markdown
+    return markdown, images

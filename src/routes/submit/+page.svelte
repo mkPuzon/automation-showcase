@@ -20,9 +20,8 @@
 {:else}
 	<h1>Submit a write-up</h1>
 	<p class="lede">
-		Something you built saved you a afternoon? Write it up and hand it to the rest of us. Upload the
-		<code>.docx</code> and the text below becomes the project page — headings, lists, tables and links
-		come through; images do not, not yet.
+		Figured out time-saving trick in Workday? Learned of a new Moodle feature? Built a tool that saved you an afternoon?
+		We'd love to hear about it! Share how you are using technology to help the larger Colby community save time for what matters.
 	</p>
 
 	<SubmissionForm

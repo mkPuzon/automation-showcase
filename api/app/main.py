@@ -13,7 +13,7 @@ from psycopg.rows import dict_row
 from . import db
 from .config import get_settings
 from .migrations import run_migrations
-from .routers import admin, projects, submissions
+from .routers import admin, images, projects, submissions
 
 API_VERSION = "0.1.0"
 
@@ -52,6 +52,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(projects.router)
+app.include_router(images.router)
 app.include_router(submissions.router)
 # Every route on this router checks its own bearer token (app/auth.py); the port itself stays
 # unpublished, so only SvelteKit server code can reach it at all.

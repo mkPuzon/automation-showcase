@@ -94,7 +94,7 @@ async def create_submission(
         )
 
     try:
-        body_markdown = docx_to_markdown(data, max_body_chars=settings.max_body_chars)
+        body_markdown, images = docx_to_markdown(data, max_body_chars=settings.max_body_chars)
     except DocxError as exc:
         raise HTTPException(status_code=422, detail=exc.message) from exc
 
@@ -112,6 +112,7 @@ async def create_submission(
             source_filename=filename[:255],
             source_path=source_path,
             created_on=created_on,
+            images=images,
         )
     except SlugConflict as exc:
         store.delete(source_path)

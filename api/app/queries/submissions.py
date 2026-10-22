@@ -61,6 +61,7 @@ async def insert_submission(
     source_filename: str | None,
     source_path: str | None,
     created_on: date,
+    images: list[tuple[str, str, bytes]] | None = None,
 ) -> dict[str, Any]:
     """Upsert the submitter and file the project as `pending`, in one transaction."""
     submitter_params = {
@@ -103,6 +104,12 @@ async def insert_submission(
                 last_error = exc
                 continue
             if row is not None:
+                project_id = row["id"]
+                for uuid_val, mime, data in (images or []):
+                    await conn.execute(
+                        "INSERT INTO project_images (project_id, uuid, position, mime_type, data) VALUES (%s, %s, %s, %s, %s)",
+                        (project_id, uuid_val, 0, mime, data),
+                    )
                 return row
 
         raise SlugConflict(

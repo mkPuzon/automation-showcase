@@ -12,7 +12,6 @@
  */
 
 import { fail, type ActionFailure } from '@sveltejs/kit';
-import { PUBLIC_TEMPLATE_URL } from '$app/env/public';
 import { SESSION_SECRET } from '$app/env/private';
 import { ApiError, submitProject } from '#lib/api';
 import { checkRenderToken, issueRenderToken, renderTokenMessage } from '#lib/antibot';
@@ -55,7 +54,7 @@ export const load = (async ({ url }) => {
 	return {
 		// Re-issued on every render, so waiting out a rate limit does not expire the form.
 		renderToken: issueRenderToken(SESSION_SECRET),
-		template_url: PUBLIC_TEMPLATE_URL,
+		template_url: '/project-template.docx',
 		waited: limited === null ? null : formatWait(Math.max(1, Number(limited) || 0))
 	};
 }) satisfies PageServerLoad;

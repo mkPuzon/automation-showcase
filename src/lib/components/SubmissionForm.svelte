@@ -177,15 +177,14 @@
 	{/if}
 
 	<p class="hint submit-form__intro">
-		One write-up per project. Write it up in a Google Doc, export it as `.docx`, and attach it below
-		— the text becomes this page, so headings and lists are worth using.
+		Write-ups can be short and to the point or longer reflections on the use of certain technologies.
+		Please use the provided template and export it as a .docx file to submit
 		{#if template_url}
 			<a href={template_url} target="_blank" rel="noopener noreferrer nofollow">
-				Open the write-up template</a
+				(Download the write-up template)</a
 			>.
 		{:else}
-			No official template has been published yet, so any Google Doc will do; ask
-			<a href="mailto:help@colby.edu">Computing Services</a> if you would like one.
+			No official template cannot be accessed. Please contact davisai@colby.edu
 		{/if}
 	</p>
 

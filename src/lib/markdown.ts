@@ -36,6 +36,7 @@ export const ALLOWED_TAGS: ReadonlySet<string> = new Set([
 	'h5',
 	'h6',
 	'a',
+	'img',
 	'table',
 	'thead',
 	'tbody',
@@ -46,6 +47,7 @@ export const ALLOWED_TAGS: ReadonlySet<string> = new Set([
 
 const ALLOWED_ATTRIBUTES: Record<string, readonly string[]> = {
 	a: ['href', 'title', 'target', 'rel'],
+	img: ['src', 'alt'],
 	th: ['align'],
 	td: ['align']
 };

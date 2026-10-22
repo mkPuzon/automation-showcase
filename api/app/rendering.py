@@ -39,6 +39,7 @@ ALLOWED_TAGS = [
     "h5",
     "h6",
     "a",
+    "img",
     "table",
     "thead",
     "tbody",
@@ -56,6 +57,7 @@ LINK_REL = "noopener noreferrer nofollow"
 
 ALLOWED_ATTRIBUTES: dict[str, list[str]] = {
     "a": ["href", "title", "target", "rel"],
+    "img": ["src", "alt"],
     "th": ["align"],
     "td": ["align"],
 }

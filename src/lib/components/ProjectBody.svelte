@@ -35,3 +35,11 @@
 {:else}
 	<p class="meta">This project has no written-up body yet.</p>
 {/if}
+
+<style>
+	article.prose img {
+		max-width: 75%;
+		height: auto;
+		display: block;
+	}
+</style>
