@@ -55,10 +55,4 @@
 
 	<ProjectBody html={project.body_html} markdown={project.body_markdown} />
 
-	{#if project.source_filename}
-		<p class="meta project__source">
-			Original document: {project.source_filename}. Questions about this write-up? Email the author
-			through the Colby directory.
-		</p>
-	{/if}
 </article>
