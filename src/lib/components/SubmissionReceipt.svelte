@@ -19,7 +19,7 @@
 </script>
 
 <section class="receipt" aria-labelledby="receipt-heading">
-	<h1 id="receipt-heading">Your write-up is in. Thank you.</h1>
+	<h1 id="receipt-heading">Your write-up is submitted, thank you!</h1>
 
 	<p class="receipt__title">
 		{submission.title}
@@ -30,9 +30,8 @@
 
 	<p>
 		Filed <time datetime={submission.created_at}>{formatDate(submission.created_at)}</time> as
-		project <code>#{submission.id}</code>. Someone will read it before it appears on Explore — a few
-		days is normal — and will write to the <code>@colby.edu</code> address you gave us if anything is
-		missing. Nothing else is needed from you.
+		project <code>#{submission.id}</code>. A site admin will review it before it appears on Explore Page.
+		If there are any issues with the submission we will contact you at your colby.edu email.
 	</p>
 
 	{#if warning}

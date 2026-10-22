@@ -27,7 +27,7 @@ import { formatWait } from '#lib/rate-limit';
 import type { Actions, PageServerLoad } from './$types';
 
 /** A wrong password says nothing more than this; whether a username exists is not a thing here. */
-const WRONG_PASSWORD = 'That password is not right.';
+const WRONG_PASSWORD = 'Incorrect password. Only site admins have access to this page.';
 const NEEDS_PASSWORD = 'Type the admin password.';
 
 export const load = (async ({ cookies, url }) => {

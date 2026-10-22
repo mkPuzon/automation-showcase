@@ -49,7 +49,7 @@
 				<circle cx="13.5" cy="6" r="4.5" fill="#ffb500" />
 				<circle cx="21" cy="6" r="4.5" fill="#52d128" />
 			</svg>
-			Colby staff &amp; faculty sharing tools that save time.
+			A place for Colby staff &amp; faculty to sharing how they make use of modern technology.
 			<!-- the reviewed seal: the site's signature, rocked into the corner —
 			     everything here cleared review before it was hung -->
 			<svg class="footer-sticker" width="96" height="96" viewBox="0 0 128 128" aria-hidden="true">
