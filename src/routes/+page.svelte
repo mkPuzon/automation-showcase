@@ -39,8 +39,10 @@
 			</svg>
 		</h1>
 		<p class="lede">
-			Automations, tools, and tips Colby staff and faculty use to get their week back. Everything
-			here was written up by a colleague and reviewed before it was published.
+			Welcome to the Colby Tech Share! Explore how your colleagues are using technology 
+			to solve problems, simplify tasks, and make more time for what matters. These 
+			short articles and tutorials offer practical ideas you can adapt to your own work. 
+			Find inspiration, discover a new tool, and even <a href="/submit" style="text-decoration: none;">share work of your own</a>.
 		</p>
 	</div>
 </div>
