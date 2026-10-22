@@ -2,7 +2,7 @@
 #
 # No Traefik and no routing config of any kind — Dokploy publishes the `web` service and terminates
 # TLS itself. `db` and `api` deliberately have no `ports:` at all: the only thing reachable from
-# outside is the web container, which is what makes "the browser never talks to FastAPI" true at the
+# outside is the frontend container, which is what makes "the browser never talks to FastAPI" true at the
 # network level rather than by convention.
 #
 #   docker compose up -d --build      # on the server (or let Dokploy run it)
@@ -50,7 +50,7 @@ services:
     volumes:
       - uploads:/data/uploads
 
-  web:
+  frontend:
     build: .
     restart: unless-stopped
     # Not `service_healthy`: Explore renders a "service not responding" notice when the API is down,
