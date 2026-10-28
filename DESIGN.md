@@ -136,7 +136,7 @@ Warm ink on cream paper; the DAI triad sampled from `dai_logo.png`.
 
 - **Ground** (`#fff9ef`): the page. **Surface** (`#fffdf8`): inputs, panels, chips. **Ground, cool** (`#fbf3e2`): code blocks and quiet fills.
 - **Ink** (`#262117`): primary text (15.3:1). **Ink, secondary** (`#5f5748`): support text (6.8:1). **Ink, tertiary** (`#6f6553`): small labels, dates, captions (5.5:1) — also the strong border color.
-- **Line** (`#eadfc9`): soft separators. **Placeholder** (`#7d7261`): 4.6:1 on surface.
+- **Line** (`#eadfc9`): soft separators. **Line, deep** (`#ddceac`): the visible tan — scrollbar thumbs, dashed empty-state borders, folder-edge warming on hover/focus. **Ground, hover** (`#f6ecd8`): warm wash under hovered pill links on the cream ground. **Placeholder** (`#7d7261`): 4.6:1 on surface.
 - **Danger** (`#a32f24`): semantic red for destructive actions only.
 
 ### Status vocabulary (pending | published | rejected)
@@ -161,8 +161,10 @@ Pending: amber tint `#fff3d1` + ink `#7a5200` + line `#ecd9a0`. Published: green
 
 - **Display** (Archivo 400, `clamp(2.5rem, 4.5vw, 4rem)`, 1.02): one per page, with the amber squiggle under it on Explore.
 - **Headline** (Archivo 400, `clamp(1.75rem, 3.2vw, 2.5rem)`, 1.08): project page titles.
-- **Title** (Archivo 500, `1.1875rem`, 1.25): card titles.
+- **Title** (Archivo 500, `1.1875rem`, 1.25): card titles, admin queue row titles, and the receipt head.
+- **Section** (Archivo 500, `1.25rem`, 1.15): page-section headings (`h2`).
 - **Body** (Nunito 450, `1rem`, 1.55): prose, max 44rem measure.
+- **Lede** (Nunito 450, `1.125rem`): the one-sentence pitch under a display head, secondary ink, max 40rem.
 - **Label** (Nunito 750, `0.8125rem`): field labels, sentence case — friendly, not stamped.
 - **Control** (Nunito 800, `0.875rem`): buttons, nav, result counts.
 - **Code** (IBM Plex Mono 400, `0.85rem`): the write-up's own voice inside `.prose`.
@@ -171,7 +173,7 @@ Pending: amber tint `#fff3d1` + ink `#7a5200` + line `#ecd9a0`. Published: green
 ## Layout
 
 One container, max-width 76rem, 1.25rem side padding. Sticky cream header with the triad-dot
-logo, pill nav (active = blue-tint pill), and the 3px triad stripe beneath. Explore reads
+logo and its Nunito 800 1rem wordmark, pill nav (active = blue-tint pill), and the 3px triad stripe beneath. Explore reads
 top-down: display head + squiggle + lede (with the drifting mark loose over it) → filter rail (pill search input, sentence-case
 labels, blue result count) → the card grid. Content below the fold follows the same
 grammar: rounded panels and warm rules.
@@ -205,7 +207,7 @@ the chip tints.
 ### Chips & statuses
 
 - **Tool chips:** mono 0.6563rem uppercase; on cards they are pill-shaped cuts of the triad tints (blue / amber / green rotating down the list, per the chip-tint rotation above); on the project page's "Uses" row the base `.tag` stays a square hairline chip.
-- **Status pills:** 0.75rem 800, pill, tinted ground + colored line + dark ink per the status table above.
+- **Status pills:** 0.75rem 800, pill, tinted ground + colored line + dark ink per the status table above. Under `forced-colors: active` the pills restore that authored trio (`forced-color-adjust: none`); everything else yields to the system palette.
 
 ### Inputs
 

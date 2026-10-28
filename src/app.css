@@ -53,10 +53,12 @@
 	--ground: #fff9ef; /* warm cream craft paper */
 	--surface: #fffdf8; /* raised paper: inputs, panels, chips */
 	--ground-cool: #fbf3e2; /* deeper cream: code blocks, quiet fills */
+	--ground-hover: #f6ecd8; /* warm wash under hovered pill links on the cream ground */
 	--ink: #262117; /* warm near-black ink */
 	--ink-2: #5f5748; /* secondary text */
 	--ink-3: #6f6553; /* small labels, dates, captions — also strong enough for input borders */
 	--line: #eadfc9; /* soft warm separator */
+	--line-deep: #ddceac; /* the visible tan: scrollbar thumbs, dashed empty-state borders, folder-edge warming */
 	--line-strong: #6f6553; /* emphasis borders, input borders */
 	--placeholder: #7d7261; /* ≥4.5:1 on the surface */
 
@@ -118,7 +120,7 @@
 html {
 	color-scheme: light;
 	scrollbar-width: thin;
-	scrollbar-color: #ddceac transparent;
+	scrollbar-color: var(--line-deep) transparent;
 }
 
 body {
@@ -182,7 +184,7 @@ textarea {
 	height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-	background: #ddceac;
+	background: var(--line-deep);
 	border: 3px solid var(--ground);
 	border-radius: var(--r-pill);
 }
@@ -193,7 +195,7 @@ textarea {
 /* the one-sentence pitch under a display head */
 .lede {
 	max-width: 40rem;
-	font-size: 1.0938rem;
+	font-size: 1.125rem;
 	color: var(--ink-2);
 }
 
@@ -232,7 +234,7 @@ textarea {
 
 .site-title {
 	font-family: var(--font-sans);
-	font-size: 1.0625rem;
+	font-size: 1rem;
 	font-weight: 800;
 	letter-spacing: -0.005em;
 	text-decoration: none;
@@ -284,7 +286,7 @@ textarea {
 	letter-spacing: 0;
 	color: var(--ink-2);
 	text-decoration: none;
-	padding: 0.42rem 1rem;
+	padding: 0.7rem 1rem;
 	border-radius: var(--r-pill);
 	transition:
 		color 150ms var(--ease),
@@ -293,7 +295,7 @@ textarea {
 
 .nav a:hover {
 	color: var(--ink);
-	background: #f6ecd8;
+	background: var(--ground-hover);
 }
 
 .nav a[aria-current='page'] {
@@ -791,7 +793,7 @@ main:has(.admin-bar) {
 	}
 
 	.card-grid .project-card:hover .folder-face {
-		border-color: #ddceac;
+		border-color: var(--line-deep);
 	}
 }
 
@@ -806,7 +808,7 @@ main:has(.admin-bar) {
 }
 
 .card-grid .project-card:focus-within .folder-face {
-	border-color: #ddceac;
+	border-color: var(--line-deep);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -920,7 +922,7 @@ main:has(.admin-bar) {
 /* ---- empty states ---------------------------------------------------------- */
 
 .empty {
-	border: 2px dashed #ddceac;
+	border: 2px dashed var(--line-deep);
 	border-radius: var(--r-lg);
 	background: var(--surface);
 	padding: 2.5rem 1.75rem;
@@ -988,6 +990,16 @@ main:has(.admin-bar) {
 	border-color: var(--rejected-line);
 	color: var(--rejected-ink);
 	background: var(--orange-tint);
+}
+
+/* Windows High Contrast strips tinted grounds and lines; the pills' tint/ink/line
+   trio is a fixed high-contrast set, so under forced colors it is restored as authored */
+@media (forced-colors: active) {
+	.status--pending,
+	.status--published,
+	.status--rejected {
+		forced-color-adjust: none;
+	}
 }
 
 /* ---- forms ------------------------------------------------------------------ */
@@ -1126,9 +1138,10 @@ button:active,
 }
 
 .breadcrumbs a {
+	display: inline-block; /* line-box height like the nav pills: a 44px touch target */
 	color: var(--ink-2);
 	text-decoration: none;
-	padding: 0.3rem 0.85rem;
+	padding: 0.7rem 0.85rem;
 	margin-left: -0.85rem;
 	border-radius: var(--r-pill);
 	transition:
@@ -1207,10 +1220,12 @@ button:active,
 	padding: 0.85rem 1rem;
 	overflow-x: auto;
 	font-size: 0.85rem;
+	font-weight: 400; /* the Code voice: Plex Mono 400, per DESIGN.md */
 }
 
 .prose code {
 	font-family: var(--font-mono);
+	font-weight: 400; /* the Code voice: Plex Mono 400, per DESIGN.md */
 	font-size: 0.875em;
 	background: var(--ground-cool);
 	border-radius: 6px;
@@ -1375,7 +1390,7 @@ button:active,
 
 .admin-bar__right a:hover {
 	color: var(--ink);
-	background: #f6ecd8;
+	background: var(--ground-hover);
 }
 
 /* the queue head: the name and the count on one line */
@@ -1512,7 +1527,7 @@ button:active,
 
 .admin-row__link {
 	font-family: var(--font-display);
-	font-size: 1.0625rem;
+	font-size: 1.1875rem;
 	font-weight: 500;
 	letter-spacing: -0.01em;
 	line-height: 1.3;
@@ -1728,7 +1743,7 @@ button:active,
 }
 
 .admin-card h2 {
-	font-size: 1.0625rem;
+	font-size: 1rem;
 	margin-bottom: 0.65rem;
 }
 
@@ -1867,7 +1882,7 @@ button:active,
 }
 
 .admin-preview {
-	border: 2px dashed #ddceac;
+	border: 2px dashed var(--line-deep);
 	background: var(--surface);
 	border-radius: var(--r-md);
 	padding: 1rem 1.1rem;

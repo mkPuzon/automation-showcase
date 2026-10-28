@@ -20,8 +20,9 @@
 {:else}
 	<h1>Submit a write-up</h1>
 	<p class="lede">
-		Figured out time-saving trick in Workday? Learned of a new Moodle feature? Built a tool that saved you an afternoon?
-		We'd love to hear about it! Share how you are using technology to help the larger Colby community save time for what matters.
+		Figured out time-saving trick in Workday? Learned of a new Moodle feature? Built a tool that
+		saved you an afternoon? We'd love to hear about it! Share how you are using technology to help
+		the larger Colby community save time for what matters.
 	</p>
 
 	<SubmissionForm
@@ -35,14 +36,13 @@
 
 	<h2>What happens next</h2>
 	<ul class="hint submit-steps">
-		<li>
-			After submitting, your write-up will be reviewed by an admin.
-		</li>
+		<li>After submitting, your write-up will be reviewed by an admin.</li>
 		<li>
 			An admin reads it, fixes any formatting the <code>.docx</code> export mangled, then publishes it.
 		</li>
 		<li>
-			"Published" means the project shows up in Explore and becomes searchable by technology and department.
+			"Published" means the project shows up in Explore and becomes searchable by technology and
+			department.
 		</li>
 	</ul>
 {/if}

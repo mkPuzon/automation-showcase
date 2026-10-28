@@ -54,5 +54,4 @@
 	</header>
 
 	<ProjectBody html={project.body_html} markdown={project.body_markdown} />
-
 </article>

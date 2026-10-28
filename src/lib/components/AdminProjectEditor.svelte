@@ -166,7 +166,14 @@
 			<p class="notice" role="status">{notice}</p>
 		{/if}
 
-		<form class="admin-form admin-card" method="post" action="?/save" use:enhance={() => async ({ update }) => await update({ reset: false })}>
+		<form
+			class="admin-form admin-card"
+			method="post"
+			action="?/save"
+			use:enhance={() =>
+				async ({ update }) =>
+					await update({ reset: false })}
+		>
 			{#if message}
 				<p class="notice notice--warning" role="alert">{message}</p>
 			{/if}

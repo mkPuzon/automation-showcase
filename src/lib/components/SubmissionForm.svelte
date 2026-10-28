@@ -177,8 +177,8 @@
 	{/if}
 
 	<p class="hint submit-form__intro">
-		Write-ups can be short and to the point or longer reflections on the use of certain technologies.
-		Please use the provided template and export it as a .docx file to submit
+		Write-ups can be short and to the point or longer reflections on the use of certain
+		technologies. Please use the provided template and export it as a .docx file to submit
 		{#if template_url}
 			<a href={template_url} target="_blank" rel="noopener noreferrer nofollow">
 				(Open the write-up template in Google Docs)</a
@@ -245,9 +245,7 @@
 			aria-invalid={visible.email ? true : undefined}
 			aria-describedby={describedBy('email')}
 		/>
-		<p class="hint" id="hint-email">
-			Please use your @colby.edu address
-		</p>
+		<p class="hint" id="hint-email">Please use your @colby.edu address</p>
 		{#if visible.email}
 			<p class="error" id="error-email">{visible.email}</p>
 		{/if}
@@ -266,9 +264,7 @@
 			aria-invalid={visible.department ? true : undefined}
 			aria-describedby={describedBy('department')}
 		/>
-		<p class="hint" id="hint-department">
-			e.g. Environmental Studies, Admissions 
-		</p>
+		<p class="hint" id="hint-department">e.g. Environmental Studies, Admissions</p>
 		{#if visible.department}
 			<p class="error" id="error-department">{visible.department}</p>
 		{/if}
@@ -308,9 +304,7 @@
 			aria-invalid={visible.technologies ? true : undefined}
 			aria-describedby={describedBy('technologies')}
 		/>
-		<p class="hint" id="hint-technologies">
-			What technologies you used in, comma-separated. 
-		</p>
+		<p class="hint" id="hint-technologies">What technologies you used in, comma-separated.</p>
 		{#if visible.technologies}
 			<p class="error" id="error-technologies">{visible.technologies}</p>
 		{/if}
@@ -375,10 +369,6 @@
 		align-items: center;
 		gap: 0.75rem;
 		flex-wrap: wrap;
-	}
-
-	.submit-form__actions .hint {
-		margin: 0;
 	}
 
 	.form-row {

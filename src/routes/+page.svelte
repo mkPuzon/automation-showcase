@@ -39,15 +39,17 @@
 			</svg>
 		</h1>
 		<p class="lede">
-			Welcome to the Colby Tech Share! Explore how your colleagues are using technology 
-			to solve problems, simplify tasks, and make more time for what matters through 
-			short articles and tutorials. Each offers practical ideas you can adapt to your own work. 
-			<br><br>
-			Scroll down below to find a solution to a repetitive task, inspiration for course activities, or discover a new tool.
-			Have a project you'd like to share? Use the submission form <a href="/submit" style="text-decoration: none;">here</a>.
-			All Colby faculty and staff are eligible to share projects.
-			<br><br>
-			Note that this site is made specifically for the Colby community. It is only visible to on Colby's network, not the larger internet.
+			Welcome to the Colby Tech Share! Explore how your colleagues are using technology to solve
+			problems, simplify tasks, and make more time for what matters through short articles and
+			tutorials. Each offers practical ideas you can adapt to your own work.
+			<br /><br />
+			Scroll down below to find a solution to a repetitive task, inspiration for course activities, or
+			discover a new tool. Have a project you'd like to share? Use the submission form
+			<a href="/submit" style="text-decoration: none;">here</a>. All Colby faculty and staff are
+			eligible to share projects.
+			<br /><br />
+			Note that this site is made specifically for the Colby community. It is only visible to on Colby's
+			network, not the larger internet.
 		</p>
 	</div>
 </div>

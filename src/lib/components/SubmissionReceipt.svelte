@@ -30,8 +30,8 @@
 
 	<p>
 		Filed <time datetime={submission.created_at}>{formatDate(submission.created_at)}</time> as
-		project <code>#{submission.id}</code>. A site admin will review it before it appears on Explore Page.
-		If there are any issues with the submission we will contact you at your colby.edu email.
+		project <code>#{submission.id}</code>. A site admin will review it before it appears on Explore
+		Page. If there are any issues with the submission we will contact you at your colby.edu email.
 	</p>
 
 	{#if warning}
@@ -54,7 +54,7 @@
 		align-items: baseline;
 		gap: 0.6rem;
 		flex-wrap: wrap;
-		font-size: 1.15rem;
+		font-size: 1.1875rem;
 		font-weight: 600;
 		margin-bottom: 1rem;
 	}
