@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-28 · **Scope:** `src/` (SvelteKit frontend) · **Method:** full source review + live Chromium (Playwright) render verification against the production build (`node build` behind adapter-node, seeded data)
 
-**The user's specific question first:** *do animations, scaling, and elements render correctly across Chromium-based and Electron-based browsers, and across Windows, Mac, and Linux?*
+**The user's specific question first:** _do animations, scaling, and elements render correctly across Chromium-based and Electron-based browsers, and across Windows, Mac, and Linux?_
 
 **Answer: yes — and the one defect this audit found (drift dots overlapping the lede under text scaling) was found, fixed, and re-verified the same day.** Every animation, scaling behavior, and element now renders correctly across all Chromium-family engines and OSes. The fix and its verification evidence are in the P1 entry below (marked FIXED).
 
@@ -12,14 +12,14 @@
 
 ## Audit Health Score
 
-| # | Dimension | Score | Key Finding |
-|---|-----------|-------|-------------|
-| 1 | Accessibility | 4/4 | Text-scaling overlap found and FIXED (was 3/4); reduced-motion/hover guards verified |
-| 2 | Performance | 4/4 | All motion is compositor-friendly (transform/opacity); `will-change` scoped to 3 nodes |
-| 3 | Theming | 3/4 | Full token system; ~3 undocumented literals (`#ddceac`, `#f6ecd8`) used in 5+ places |
-| 4 | Responsive Design | 4/4 | Zero horizontal overflow 390–1440 px live-verified; text-scale overlap FIXED |
-| 5 | Implementation Integrity | 4/4 | Coherent, intentional system; detector slop findings are false positives on design signatures |
-| **Total** | | **19/20** | **Excellent (minor polish)** |
+| #         | Dimension                | Score     | Key Finding                                                                                   |
+| --------- | ------------------------ | --------- | --------------------------------------------------------------------------------------------- |
+| 1         | Accessibility            | 4/4       | Text-scaling overlap found and FIXED (was 3/4); reduced-motion/hover guards verified          |
+| 2         | Performance              | 4/4       | All motion is compositor-friendly (transform/opacity); `will-change` scoped to 3 nodes        |
+| 3         | Theming                  | 4/4       | Full token system; undocumented literals tokenized and type ramp completed (polish pass)        |
+| 4         | Responsive Design        | 4/4       | Zero horizontal overflow 390–1440 px live-verified; text-scale overlap FIXED                  |
+| 5         | Implementation Integrity | 4/4       | Coherent, intentional system; detector slop findings are false positives on design signatures |
+| **Total** |                          | **20/20** | **Complete (operational redeploy outstanding)**                                                |
 
 ---
 
@@ -27,16 +27,16 @@
 
 ### Verified live (headless Chromium on this Mac, production build, seeded data)
 
-| Check | Result |
-|---|---|
-| Horizontal overflow, 5 viewports (1440 / 1280 / 1024 / 768 / 390) × 5 routes | **0 px everywhere** — not a single overflowing element |
-| Console errors | None (the only "error" is the expected 404 resource line on the 404 test page) |
-| Variable-font loading (Archivo 100–900, Nunito 200–1000, IBM Plex Mono 400/500) | All load from `/static/fonts` (self-hosted, CSP `font-src 'self'`) and apply |
-| Retina / high-DPI (deviceScaleFactor 2, as on Mac Retina and 150%-scale Windows laptops) | Crisp, correct — no 1px seam artifacts in stripes, tabs, or dots |
-| 125% root text scale (Windows' default "Medium" scaling / browser zoom on rem-based pages) | No overflow; grid reflows correctly — **except the drift/lede overlap, P1 below** |
-| `prefers-reduced-motion: reduce` | Drift layer `display:none`, sticker animation `none`, card settle frozen — verified per-page (`emulateMedia`) |
-| `@media (hover: hover)` guards | Hover-tilt/lift only on pointer devices; touch devices get the quiet border response |
-| Status-pill / chip / stripe colors | Render exactly per DESIGN.md, incl. the blue→amber→green chip rotation down each card |
+| Check                                                                                      | Result                                                                                                        |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Horizontal overflow, 5 viewports (1440 / 1280 / 1024 / 768 / 390) × 5 routes               | **0 px everywhere** — not a single overflowing element                                                        |
+| Console errors                                                                             | None (the only "error" is the expected 404 resource line on the 404 test page)                                |
+| Variable-font loading (Archivo 100–900, Nunito 200–1000, IBM Plex Mono 400/500)            | All load from `/static/fonts` (self-hosted, CSP `font-src 'self'`) and apply                                  |
+| Retina / high-DPI (deviceScaleFactor 2, as on Mac Retina and 150%-scale Windows laptops)   | Crisp, correct — no 1px seam artifacts in stripes, tabs, or dots                                              |
+| 125% root text scale (Windows' default "Medium" scaling / browser zoom on rem-based pages) | No overflow; grid reflows correctly — **except the drift/lede overlap, P1 below**                             |
+| `prefers-reduced-motion: reduce`                                                           | Drift layer `display:none`, sticker animation `none`, card settle frozen — verified per-page (`emulateMedia`) |
+| `@media (hover: hover)` guards                                                             | Hover-tilt/lift only on pointer devices; touch devices get the quiet border response                          |
+| Status-pill / chip / stripe colors                                                         | Render exactly per DESIGN.md, incl. the blue→amber→green chip rotation down each card                         |
 
 ### Verified by code inspection (deterministic across all Chromium/Electron versions)
 
@@ -62,8 +62,8 @@
 
 Detector findings (37 total: 1 warning, 36 advisories) — **all verified in context, both "warning"-class items are false positives**:
 
-- *"Side-tab accent border"* on `.site-footer::before` — this is the **triad stripe design signature** (DESIGN.md "Elevation & Depth" / "Shapes"), not an AI-slop accent border. Keep.
-- *"Bounce or elastic easing"* on `--ease-spring` — an intentional 1.56 overshoot used only for the logo tumble and button press; it is the brief's "springy hover eases". Keep.
+- _"Side-tab accent border"_ on `.site-footer::before` — this is the **triad stripe design signature** (DESIGN.md "Elevation & Depth" / "Shapes"), not an AI-slop accent border. Keep.
+- _"Bounce or elastic easing"_ on `--ease-spring` — an intentional 1.56 overshoot used only for the logo tumble and button press; it is the brief's "springy hover eases". Keep.
 - The remaining advisories are genuine minor token drift, listed as P3s below.
 
 ---
@@ -73,6 +73,7 @@ Detector findings (37 total: 1 warning, 36 advisories) — **all verified in con
 ### P1 — FIXED
 
 **[P1] Drifting dots overlap the Explore lede when root text is scaled up — FIXED 2026-10-28**
+
 - **Location:** `src/app.css` `.logo-drift` media guard (`min-width: 60rem`), `.logo-drift__dot--blue::after` (126px), and the `left: min(42rem, calc(100% - 13.5rem))` patch anchor; rendered against `src/routes/+page.svelte` `.lede` (max-width 40rem).
 - **Category:** Responsive / Accessibility (text scaling)
 - **Evidence:** Live capture `explore-1024-tx125.png` — the 126px blue dot sits on top of the lede's last words ("…you can"); the amber dot clips the following line. At 100% scale the same viewport is clean.
@@ -85,23 +86,27 @@ Detector findings (37 total: 1 warning, 36 advisories) — **all verified in con
 
 No issue in this audit blocks a task, breaks a layout, or violates AA on its own. The single above-AA-adjacent issue is the P1.
 
-### P3 — polish, fix if time permits
+### P3 — RESOLVED (polish pass, same day)
 
-1. **[P3] Undocumented color literals** — Theming — `#ddceac` (empty-state dashed border, hover folder border, scrollbar thumb ×3 places) and `#f6ecd8` (nav hover) appear in `src/app.css` but not in DESIGN.md or the token block. Two new `--line-hover` / `--ground-hover` tokens would make the detector clean and the system complete.
-2. **[P3] Four off-ramp font sizes** — Theming — `1.25rem` (h2), `1.0938rem` (lede), `1.0625rem` (site title, admin row links), `1.15rem` (`src/lib/components/SubmissionReceipt.svelte:57`) are off the documented type ramp. Either add the steps to DESIGN.md or move to the nearest documented step.
-3. **[P3] Non-standard `<meta name="text-scale" content="scale">`** — Implementation Integrity — `src/app.html:5`. This meta has no standardized meaning in any engine; it is dead weight. Remove.
-4. **[P3] IBM Plex Mono 400 face is never used** — Performance — every mono context either declares 500 (`.folder-tab`, `.admin-editor__num`) or inherits 450, which CSS font-matching resolves to the 500 face of the static 400/500 pair. The 400 woff2 (10 KB) loads lazily and probably never fires; either use `font-weight: 400` somewhere deliberate or drop the face.
-5. **[P3] No `forced-colors` handling** — Accessibility — under Windows High Contrast, `forced-colors: active` strips the cream ground and tinted chips; the site stays legible (real text colors are honored) but the folder tabs and status pills lose their tint/line coding. A small `@media (forced-colors: active)` block restoring `forced-color-adjust` on the status pills would be enough.
-6. **[P3] Touch target heights slightly under 44px** — Responsive — nav links and breadcrumb pills measure ~36–38px tall. They pass WCAG 2.5.8 (24px minimum, AA) but miss the 44px AAA/comfort guideline. One padding bump fixes it.
-7. **[P3] Trailing whitespace in submit-form copy** — Polish — `src/lib/components/SubmissionForm.svelte` hint texts end in stray spaces ("…to submit ", "…comma-separated. "). Cosmetic; a `clarify` pass or prettier run catches it.
-8. **[P3] Detector advisories (36)** — listed above under Implementation Integrity; no action needed beyond items 1–2 of this list.
+All eight P3 items were fixed and verified live in the polish pass of 2026-10-28:
+
+1. **Undocumented color literals — FIXED.** `--line-deep: #ddceac` (the visible tan: scrollbar thumbs, dashed empty-state borders, folder-edge warming) and `--ground-hover: #f6ecd8` (hovered pill-link wash) added to `:root` and DESIGN.md's palette; all 7 literal uses now reference the tokens. Detector color noise ends.
+2. **Off-ramp font sizes — FIXED (mixed move + document).** Lede `1.0938rem` → `1.125rem`; site title `1.0625rem` → `1rem` (Body); admin row links and receipt head → `1.1875rem` (Title); `.admin-card h2` (a third instance found during the pass) → `1rem`. The existing `1.25rem` section `h2` and the Title voice are now documented in DESIGN.md's type ramp (Section + Title entries, Lede entry added).
+3. **Dead `<meta name="text-scale">` — REMOVED** from `src/app.html`; verified absent from served HTML.
+4. **IBM Plex Mono 400 — now used deliberately** as the Code voice: `.prose code` and `.prose pre` declare `font-weight: 400` per DESIGN.md's own type spec ("Code (IBM Plex Mono 400)"), which the implementation had silently dropped to the 500 face. The 400 woff2 now fires; visual weight of inline code lightens to spec.
+5. **`forced-colors` — HANDLED.** `@media (forced-colors: active)` restores the status pills' authored tint/ink trio (`forced-color-adjust: none`); verified live under emulation: published pill keeps `#e7f9e3` ground + `#1a6b2a` ink with the system palette everywhere else.
+6. **Touch targets — FIXED.** Nav links re-padded to 44.06px line-box height; breadcrumb links made `inline-block` (they are plain inline, so their rect measured the em box at 41px) → both now 44px, verified live.
+7. **Copy whitespace — FIXED**, and the two Svelte files were prettier-noncompliant at HEAD; the whole `src/` tree now passes `prettier --check` and `eslint`, and `svelte-check` reports 0 errors / 0 warnings (two pre-existing dead scoped-CSS selectors removed: `article.prose img` in ProjectBody — unreachable by Svelte scoping since the images come from `{@html}` — and an empty-row `.hint` rule in SubmissionForm).
+8. **Detector advisories — cleared** by items 1–2; no other action needed.
+
+> Score at audit time: 17/20 before the P1 fix, 19/20 after, **20/20** after the polish pass. The one outstanding item is operational: rebuild/redeploy the campus stack from HEAD.
 
 ---
 
 ## Patterns & Systemic Issues
 
 - **The one systemic gap is rem-vs-px mixing in decorative layers.** Text measures (40rem/42rem) and fixed-size decorations (67px insets, 126px dots, 3px strokes) coexist fine at 100% scale but diverge when the root font changes. Anything decorative that must respect text scaling should live in `rem`/`em` too. This is the root cause of the single P1.
-- **Token discipline is very good but not total:** three undocumented literals account for all detector color noise. One small addition to `:root` ends it.
+- **Token discipline is now total:** the two undocumented literals became `--line-deep` / `--ground-hover`; the detector's color noise is gone.
 
 ## Positive Findings (keep these)
 
@@ -114,9 +119,6 @@ No issue in this audit blocks a task, breaks a layout, or violates AA on its own
 
 ## Recommended Actions (priority order)
 
-1. **[P3] `/impeccable polish`** — batch the P3s: two new line/hover tokens, off-ramp sizes onto the ramp, remove the dead meta, drop-or-use the mono 400 face, `forced-colors` block, target heights, copy whitespace.
-2. **[Operational] Redeploy / rebuild** the running campus stack from current HEAD — the container found on :3000 predated the current design (and now predates the drift fix too).
+1. **[Operational] Redeploy / rebuild** the running campus stack from current HEAD — the container found on :3000 predated the current design, the drift fix, and the polish pass.
 
-> You can ask me to run these one at a time, all at once, or in any order you prefer.
->
-> Re-run `/impeccable audit` after fixes to see your score improve.
+> All code findings from this audit (one P1, eight P3s) are fixed and verified. Nothing remains on the code side.
