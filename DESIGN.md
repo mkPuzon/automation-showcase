@@ -233,17 +233,18 @@ Decoration with one home; do not repeat it per-section.
 
 The logo's three sticker dots, cut loose on the free ground just right of the explore head's text
 column (the lede stops at 40rem; the patch starts at `min(42rem, calc(100% - 13.5rem))` and the
-layer is hidden under 60rem, where the free ground beside the text gets too tight). Absolutely
+layer is hidden under 60em of viewport — an em guard, so a scaled-up root font (Windows 125%
+display scaling, a bumped browser text size) hides it before the lede can reach it). Absolutely
 anchored to the head — pointerless, behind content — so it scrolls away with the page rather than
-floating over the shelf. Inside it, a field frame inset 67px holds the roaming bounds; each dot
-its own size (blue 126px, green 83px, amber 63px) follows its own hand-set waypoint loop
+floating over the shelf. Inside it, a field frame inset 4.1875rem holds the roaming bounds; each dot
+its own size (blue 7.875rem, green 5.1875rem, amber 3.9375rem) follows its own hand-set waypoint loop
 (53s / 41s / 61s, eased leg by leg, so it reads as wandering rather than orbiting), with a 1.06
 scale breath apiece. Motion runs on compositor transforms — a full-field wrapper box per dot is
 carried by percent translates (they resolve against the wrapper's own box, which is the field)
 and the circle is the wrapper's ::after — so the wander never stutters on main-thread work. The
 three tempos share no simple beat, so the dots constantly drift together
 and apart — overlapping when they cross, the 3px cream strokes keeping them readable as three,
-and the logo re-forming and scattering on no schedule. Shown only at ≥60rem and under
+and the logo re-forming and scattering on no schedule. Shown only at ≥60em and under
 `prefers-reduced-motion: no-preference`.
 
 ### The Admin Workplace (`/admin/*`)

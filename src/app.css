@@ -422,23 +422,28 @@ main:has(.admin-bar) {
 /* ---- Explore: the wandering mark ------------------------------------------ */
 
 /* The logo's three sticker dots, cut loose on the free ground just right of the
-   head's text — each its own size (126 / 63 / 83px), each ambling through a
-   shared field on a waypoint loop of its own and at its own pace (53s / 41s /
-   61s), so the three are always drifting together or apart and the logo keeps
-   re-forming and scattering for no reason a clock could predict. Each loop
+   head's text — each its own size (7.875 / 3.9375 / 5.1875rem), each ambling
+   through a shared field on a waypoint loop of its own and at its own pace
+   (53s / 41s / 61s), so the three are always drifting together or apart and the
+   logo keeps re-forming and scattering for no reason a clock could predict. Each loop
    moves a full-field wrapper box with transforms — compositor-drawn, so the
    amble stays smooth even when the main thread is busy — while the circle
    itself is the wrapper's ::after; the legs are eased one by one, which reads
    as wandering rather than orbiting. The layer belongs to the head itself, so
    it scrolls away with the page; it is behind the content, pointerless, and
    shown only where there is room for it and a visitor who has not asked for
-   stillness. */
+   stillness. Every length here is in rem so the patch and the text column it
+   stands beside scale together: the guard is in em (media-query em tracks the
+   root font size), so a scaled-up root — Windows' 125% display scaling, a
+   bumped browser font size — hides the patch before the lede can reach it,
+   and at every scale where it does show, the geometry is identical to the
+   default root's. */
 
 .logo-drift {
 	display: none;
 }
 
-@media (min-width: 60rem) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 60em) and (prefers-reduced-motion: no-preference) {
 	.logo-drift {
 		display: block;
 		position: absolute;
@@ -464,7 +469,7 @@ main:has(.admin-bar) {
 	   the head's hairline rule */
 	.logo-drift__field {
 		position: absolute;
-		inset: 67px;
+		inset: 4.1875rem;
 	}
 
 	/* each dot is a full-field wrapper the loop carries with transforms (percent
@@ -502,22 +507,22 @@ main:has(.admin-bar) {
 	}
 
 	.logo-drift__dot--blue::after {
-		width: 126px;
-		height: 126px;
+		width: 7.875rem;
+		height: 7.875rem;
 		background: var(--blue);
 		animation: logo-drift-pulse 11s ease-in-out -3s infinite;
 	}
 
 	.logo-drift__dot--amber::after {
-		width: 63px;
-		height: 63px;
+		width: 3.9375rem;
+		height: 3.9375rem;
 		background: var(--amber);
 		animation: logo-drift-pulse 14s ease-in-out -8s infinite;
 	}
 
 	.logo-drift__dot--green::after {
-		width: 83px;
-		height: 83px;
+		width: 5.1875rem;
+		height: 5.1875rem;
 		background: var(--green);
 		animation: logo-drift-pulse 17s ease-in-out -12s infinite;
 	}
