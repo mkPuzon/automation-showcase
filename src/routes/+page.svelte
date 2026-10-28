@@ -5,12 +5,11 @@
 	let { data } = $props() satisfies PageData;
 </script>
 
+<svelte:head>
+	<title>Explore · Colby Tech Share</title>
+</svelte:head>
+
 <div class="explore-head">
-	<!-- the mark, set loose beside the head's text: a carrier point rides the
-	     border of the free ground right of the text while the three dots it
-	     carries hold a triangle formation that keeps closing into the logo and
-	     floating apart again. Pure decoration: pointerless, behind the content,
-	     and anchored to the head — it scrolls away with the page. -->
 	<!-- the mark, cut loose beside the head's text: three dots of different
 	     sizes wander a shared field on loops of their own — always drifting
 	     together or apart, so the logo keeps re-forming and scattering. Pure
