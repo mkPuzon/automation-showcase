@@ -1,19 +1,12 @@
-# Production shape: web + api + db, one Postgres volume and one uploads volume.
+# Production: web + api + db, one Postgres volume and one uploads volume.
 #
 # No Traefik and no routing config of any kind — Dokploy publishes the `web` service and terminates
-# TLS itself. `db` and `api` deliberately have no `ports:` at all: the only thing reachable from
-# outside is the frontend container, which is what makes "the browser never talks to FastAPI" true at the
-# network level rather than by convention.
+# TLS itself. `db` and `api` deliberately have no `ports:` the only thing reachable from
+# outside is the frontend container. The browser never talks directly to FastAPI.
 #
-#   docker compose up -d --build      # on the server (or let Dokploy run it)
-#
-# Variables come from the repo-root `.env` here and from Dokploy's environment UI in production;
+# Variables come from the repo-root `.env` for development and from Dokploy's environment UI in prod;
 # same names either way. `compose.local.yml` is the dev file (Postgres only).
 #
-# On a dev machine: `compose.local.yml` and this file both call their database service `db`, so
-# `docker compose -f compose.yml up` would rebuild the container your dev API is talking to. Run the
-# production file under its own project name (`docker compose -p techshare-prod -f compose.yml up`)
-# if you want both at once.
 
 services:
   db:

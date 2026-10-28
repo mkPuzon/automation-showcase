@@ -31,6 +31,10 @@ import type { Actions, PageServerLoad, RequestEvent } from './$types';
 const BOT_MESSAGE = 'That submission could not be accepted.';
 const NEEDS_FIXING = 'Some fields need another look — they are marked below.';
 
+/** The shared Google Docs template; `/copy` opens a writable copy for the student. */
+const TEMPLATE_URL =
+	'https://docs.google.com/document/d/1rVpzhNvx6V81SWCLy-7RoLCpiNY2dxAzmt6kMiH7aPI/copy';
+
 /** What the form may be handed back after anything short of success. */
 export interface SubmissionFailure {
 	ok?: false;
@@ -54,7 +58,7 @@ export const load = (async ({ url }) => {
 	return {
 		// Re-issued on every render, so waiting out a rate limit does not expire the form.
 		renderToken: issueRenderToken(SESSION_SECRET),
-		template_url: '/project-template.docx',
+		template_url: TEMPLATE_URL,
 		waited: limited === null ? null : formatWait(Math.max(1, Number(limited) || 0))
 	};
 }) satisfies PageServerLoad;

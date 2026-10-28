@@ -181,7 +181,7 @@
 		Please use the provided template and export it as a .docx file to submit
 		{#if template_url}
 			<a href={template_url} target="_blank" rel="noopener noreferrer nofollow">
-				(Download the write-up template)</a
+				(Open the write-up template in Google Docs)</a
 			>.
 		{:else}
 			No official template cannot be accessed. Please contact davisai@colby.edu
