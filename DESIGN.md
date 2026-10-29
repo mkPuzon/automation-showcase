@@ -246,8 +246,10 @@ carried by percent translates (they resolve against the wrapper's own box, which
 and the circle is the wrapper's ::after — so the wander never stutters on main-thread work. The
 three tempos share no simple beat, so the dots constantly drift together
 and apart — overlapping when they cross, the 3px cream strokes keeping them readable as three,
-and the logo re-forming and scattering on no schedule. Shown only at ≥60em and under
-`prefers-reduced-motion: no-preference`.
+and the logo re-forming and scattering on no schedule. Shown at ≥60em; the wander
+and breath run only under `prefers-reduced-motion: no-preference` — under reduce the
+same three dots hold still in the mark's own arrangement, because reduced motion
+asks for less movement, not a blank wall.
 
 ### The Admin Workplace (`/admin/*`)
 

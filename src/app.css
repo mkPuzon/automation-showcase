@@ -433,8 +433,8 @@ main:has(.admin-bar) {
    itself is the wrapper's ::after; the legs are eased one by one, which reads
    as wandering rather than orbiting. The layer belongs to the head itself, so
    it scrolls away with the page; it is behind the content, pointerless, and
-   shown only where there is room for it and a visitor who has not asked for
-   stillness. Every length here is in rem so the patch and the text column it
+   shown wherever there is room for it — reduced motion means less movement,
+   not a blank wall: the same three dots, held still in the mark's own pose. Every length here is in rem so the patch and the text column it
    stands beside scale together: the guard is in em (media-query em tracks the
    root font size), so a scaled-up root — Windows' 125% display scaling, a
    bumped browser font size — hides the patch before the lede can reach it,
@@ -445,7 +445,7 @@ main:has(.admin-bar) {
 	display: none;
 }
 
-@media (min-width: 60em) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 60em) {
 	.logo-drift {
 		display: block;
 		position: absolute;
@@ -480,19 +480,21 @@ main:has(.admin-bar) {
 	.logo-drift__dot {
 		position: absolute;
 		inset: 0;
-		will-change: transform;
 	}
 
+	/* the still frame: the three dots resting loosely in the mark's own
+	   arrangement (blue left, amber right, green low-center), well inside the
+	   bounds the wander loops already use */
 	.logo-drift__dot--blue {
-		animation: logo-wander-blue 53s ease-in-out -9s infinite;
+		transform: translate(32%, 30%);
 	}
 
 	.logo-drift__dot--amber {
-		animation: logo-wander-amber 41s ease-in-out -25s infinite;
+		transform: translate(64%, 40%);
 	}
 
 	.logo-drift__dot--green {
-		animation: logo-wander-green 61s ease-in-out -44s infinite;
+		transform: translate(42%, 62%);
 	}
 
 	.logo-drift__dot::after {
@@ -512,20 +514,50 @@ main:has(.admin-bar) {
 		width: 7.875rem;
 		height: 7.875rem;
 		background: var(--blue);
-		animation: logo-drift-pulse 11s ease-in-out -3s infinite;
 	}
 
 	.logo-drift__dot--amber::after {
 		width: 3.9375rem;
 		height: 3.9375rem;
 		background: var(--amber);
-		animation: logo-drift-pulse 14s ease-in-out -8s infinite;
 	}
 
 	.logo-drift__dot--green::after {
 		width: 5.1875rem;
 		height: 5.1875rem;
 		background: var(--green);
+	}
+}
+
+/* the motion is the only part that asks permission: the wander and the breath
+   run only for a visitor who has not asked for stillness. A running animation
+   overrides the static poses above; will-change is motion-only overhead. */
+@media (min-width: 60em) and (prefers-reduced-motion: no-preference) {
+	.logo-drift__dot {
+		will-change: transform;
+	}
+
+	.logo-drift__dot--blue {
+		animation: logo-wander-blue 53s ease-in-out -9s infinite;
+	}
+
+	.logo-drift__dot--amber {
+		animation: logo-wander-amber 41s ease-in-out -25s infinite;
+	}
+
+	.logo-drift__dot--green {
+		animation: logo-wander-green 61s ease-in-out -44s infinite;
+	}
+
+	.logo-drift__dot--blue::after {
+		animation: logo-drift-pulse 11s ease-in-out -3s infinite;
+	}
+
+	.logo-drift__dot--amber::after {
+		animation: logo-drift-pulse 14s ease-in-out -8s infinite;
+	}
+
+	.logo-drift__dot--green::after {
 		animation: logo-drift-pulse 17s ease-in-out -12s infinite;
 	}
 }
